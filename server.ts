@@ -187,6 +187,70 @@ async function startServer() {
     }
   });
 
+  // Admin Invite Email
+  app.post("/api/send-admin-invite", async (req, res) => {
+    if (!RESEND_API_KEY) {
+      console.warn("RESEND_API_KEY is not configured.");
+      return res.status(200).json({ success: true, message: "Email not sent: RESEND_API_KEY missing" });
+    }
+
+    const { email, role } = req.body;
+    if (!email) return res.status(400).json({ success: false, error: "Email is required." });
+
+    const roleLabel = role === 'professional' ? 'Clinical Professional'
+      : role === 'specialist' ? 'Specialist'
+      : 'Administrator';
+
+    try {
+      const { Resend } = await import('resend');
+      const resend = new Resend(RESEND_API_KEY);
+
+      const { data, error } = await resend.emails.send({
+        from: 'Vershante Lynn <onboarding@resend.dev>',
+        to: [email],
+        subject: `You've been granted clinical dashboard access — Vershante Lynn`,
+        html: `
+          <div style="font-family: 'Inter', sans-serif; color: #2C3E50; max-width: 600px; margin: 0 auto; background-color: #FDFCF9; padding: 40px; border: 1px solid #E8E2D9; border-radius: 20px;">
+            <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.2em; color: #D3866E; font-weight: bold; margin-bottom: 20px;">Clinical Access Granted</p>
+            <h1 style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 28px; color: #4A5D4E; border-bottom: 2px solid #E8E2D9; padding-bottom: 12px;">Welcome to the Team</h1>
+
+            <p style="font-size: 15px; line-height: 1.7; color: #2C3E50; margin-top: 24px;">
+              You have been granted <strong>${roleLabel}</strong> access to the Vershante Lynn Clinical Skincare dashboard.
+            </p>
+
+            <div style="background-color: #4A5D4E; color: white; padding: 24px; border-radius: 14px; margin: 28px 0;">
+              <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: #D3866E; margin-bottom: 6px;">Your Access Level</p>
+              <p style="font-size: 20px; font-family: 'Cormorant Garamond', serif; font-style: italic; margin: 4px 0;">${roleLabel}</p>
+              <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 6px;">Login with: ${email}</p>
+            </div>
+
+            <p style="font-size: 14px; line-height: 1.6; color: #4A5D4E;">
+              To access the dashboard, visit the site and click <strong>Dashboard</strong> in the navigation. Sign in with this email address.
+            </p>
+
+            <p style="font-size: 14px; line-height: 1.6; color: #4A5D4E; margin-top: 16px;">
+              If you don't yet have a password, use the <em>Forgot password?</em> link on the login screen to set one up.
+            </p>
+
+            <div style="margin-top: 40px; border-top: 1px solid #E8E2D9; padding-top: 20px; text-align: center;">
+              <p style="font-size: 11px; color: #4A5D4E; opacity: 0.5;">Vershante Lynn Clinical Skincare · Confidential Access Notification</p>
+            </div>
+          </div>
+        `
+      });
+
+      if (error) {
+        console.error("Admin invite email error:", error);
+        return res.status(500).json({ success: false, error: "Failed to send invite email." });
+      }
+
+      res.status(200).json({ success: true, data });
+    } catch (err) {
+      console.error("Admin invite server error:", err);
+      res.status(500).json({ success: false, error: "Internal server error." });
+    }
+  });
+
   // AI Clinical Analysis Endpoint
   app.post("/api/analyze-skin", async (req, res) => {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;

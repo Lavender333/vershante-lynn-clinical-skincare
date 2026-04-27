@@ -198,6 +198,19 @@ export default function AdminDashboard() {
         role: newAdminRole,
         addedAt: serverTimestamp()
       });
+      // Send invite email notification
+      try {
+        await fetch('/api/send-admin-invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, role: newAdminRole })
+        });
+      } catch (emailErr) {
+        console.warn('Admin invite email could not be sent:', emailErr);
+      }
+      toast.success('Admin Access Granted', {
+        description: `An invitation email has been sent to ${email}.`
+      });
       setNewAdminEmail('');
       setNewAdminRole('admin');
     } catch (e) {
