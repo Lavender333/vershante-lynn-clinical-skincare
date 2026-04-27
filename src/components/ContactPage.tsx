@@ -144,7 +144,7 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid sm:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss ml-4">Identifier (Name)</label>
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss ml-4">Name</label>
                     <div className="relative">
                       <User className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-sand" size={16} />
                       <input 
@@ -152,13 +152,13 @@ export default function ContactPage() {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        placeholder="Clinical Name"
+                        placeholder="Your name"
                         className="w-full bg-brand-cream/30 border border-brand-sand rounded-full pl-12 pr-6 py-4 text-sm outline-none focus:border-brand-terracotta transition-all"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss ml-4">Communication Node (Email)</label>
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss ml-4">Email</label>
                     <div className="relative">
                       <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-sand" size={16} />
                       <input 
@@ -174,25 +174,25 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss ml-4">Subject Vector</label>
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss ml-4">Subject</label>
                   <input 
                     type="text"
                     required
                     value={formData.subject}
                     onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                    placeholder="Brief objective of inquiry"
+                    placeholder="What is this about?"
                     className="w-full bg-brand-cream/30 border border-brand-sand rounded-full px-8 py-4 text-sm outline-none focus:border-brand-terracotta transition-all"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss ml-4">Diagnostic Narrative (Message)</label>
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss ml-4">Message</label>
                   <textarea 
                     required
                     rows={6}
                     value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    placeholder="Detail your clinical inquiry here..."
+                    placeholder="Write your message here..."
                     className="w-full bg-brand-cream/30 border border-brand-sand rounded-[2rem] px-8 py-6 text-sm outline-none focus:border-brand-terracotta transition-all resize-none"
                   ></textarea>
                 </div>
@@ -210,10 +210,10 @@ export default function ContactPage() {
                   className="w-full bg-brand-moss text-white py-5 rounded-full font-bold uppercase tracking-widest text-[11px] hover:bg-brand-slate transition-all shadow-xl disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-3"
                 >
                   {status === 'submitting' ? (
-                    <>Processing Synchronization...</>
+                    <>Sending...</>
                   ) : (
                     <>
-                      Distribute Inquiry
+                      Send Message
                       <Send size={14} />
                     </>
                   )}

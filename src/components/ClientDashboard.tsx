@@ -15,7 +15,8 @@ import {
   User,
   updateProfile,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { 
   FlaskConical, 
@@ -111,12 +112,26 @@ export default function ClientDashboard() {
     }
   }, [user]);
 
+  const formatAuthError = (error: any) => {
+    if (error?.code === 'auth/unauthorized-domain') {
+      const host = window.location.hostname;
+      return `Google sign-in is not enabled for ${host}. Add this domain in Firebase Console -> Authentication -> Settings -> Authorized domains.`;
+    }
+
+    if (error?.code === 'auth/popup-closed-by-user') {
+      return 'Google sign-in was canceled before completion.';
+    }
+
+    return error?.message || 'Unable to sign in right now. Please try again.';
+  };
+
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();
+    setAuthError(null);
     try {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      setAuthError(error.message);
+      setAuthError(formatAuthError(error));
     }
   };
 
@@ -136,8 +151,27 @@ export default function ClientDashboard() {
         ? 'No account found with this email.'
         : error.code === 'auth/email-already-in-use'
         ? 'An account already exists with this email.'
-        : error.message;
+        : formatAuthError(error);
       setAuthError(msg);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setAuthError(null);
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      setAuthError('Enter your email, then click Forgot password.');
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, normalizedEmail);
+      toast.success('Password reset email sent', {
+        description: 'Check your inbox for a link to reset your password.'
+      });
+    } catch (error: any) {
+      setAuthError(formatAuthError(error));
     }
   };
 
@@ -280,6 +314,15 @@ export default function ClientDashboard() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {authMode === 'login' && (
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="mt-2 text-[10px] font-bold uppercase tracking-widest text-brand-terracotta hover:text-brand-moss transition-colors"
+                >
+                  Forgot password?
+                </button>
+              )}
             </div>
 
             {authError && (
@@ -292,7 +335,7 @@ export default function ClientDashboard() {
               type="submit"
               className="w-full bg-brand-moss text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-slate transition-all shadow-lg"
             >
-              {authMode === 'login' ? 'Log In with Intelligence' : 'Create Account'}
+              {authMode === 'login' ? 'Log In' : 'Create Account'}
             </button>
           </form>
 

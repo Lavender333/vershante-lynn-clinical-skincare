@@ -18,7 +18,8 @@ import {
   signOut,
   User,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { 
   FlaskConical, 
@@ -273,12 +274,34 @@ export default function AdminDashboard() {
     setIsEditingInsights(false);
   }, [selectedRecord]);
 
+  const formatAuthError = (error: any) => {
+    if (error?.code === 'auth/unauthorized-domain') {
+      const host = window.location.hostname;
+      return `Google sign-in is not enabled for ${host}. Add this domain in Firebase Console -> Authentication -> Settings -> Authorized domains.`;
+    }
+
+    if (error?.code === 'auth/popup-closed-by-user') {
+      return 'Google sign-in was canceled before completion.';
+    }
+
+    if (error?.code === 'auth/invalid-credential' || error?.code === 'auth/wrong-password') {
+      return 'Incorrect email or password.';
+    }
+
+    if (error?.code === 'auth/user-not-found') {
+      return 'No account found with this email.';
+    }
+
+    return error?.message || 'Unable to sign in right now. Please try again.';
+  };
+
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
+    setAuthError(null);
     try {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      setAuthError(error.message);
+      setAuthError(formatAuthError(error));
     }
   };
 
@@ -292,7 +315,26 @@ export default function AdminDashboard() {
         await createUserWithEmailAndPassword(auth, email, password);
       }
     } catch (error: any) {
-      setAuthError(error.message);
+      setAuthError(formatAuthError(error));
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setAuthError(null);
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      setAuthError('Enter your email, then click Forgot password.');
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, normalizedEmail);
+      toast.success('Password reset email sent', {
+        description: 'Check your inbox for a link to reset your password.'
+      });
+    } catch (error: any) {
+      setAuthError(formatAuthError(error));
     }
   };
 
@@ -504,7 +546,7 @@ export default function AdminDashboard() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] uppercase tracking-widest font-bold text-brand-moss pl-2">Security Key</label>
+              <label className="text-[9px] uppercase tracking-widest font-bold text-brand-moss pl-2">Password</label>
               <div className="relative">
                 <input 
                   type={showPassword ? "text" : "password"} 
@@ -522,6 +564,15 @@ export default function AdminDashboard() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {authMode === 'login' && (
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="mt-2 text-[10px] font-bold uppercase tracking-widest text-brand-terracotta hover:text-brand-moss transition-colors"
+                >
+                  Forgot password?
+                </button>
+              )}
             </div>
 
             {authError && (
@@ -534,7 +585,7 @@ export default function AdminDashboard() {
               type="submit"
               className="w-full bg-brand-moss text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-slate transition-all shadow-lg"
             >
-              {authMode === 'login' ? 'Proceed to Intelligence' : 'Establish Admin Account'}
+              {authMode === 'login' ? 'Log In' : 'Create Admin Account'}
             </button>
           </form>
 
