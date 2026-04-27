@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "Assessment": {
+      "title": "Skin Intelligence Assessment",
+      "description": "Comprehensive skin and lifestyle data for clinical analysis.",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string", "description": "User's full name" },
+        "email": { "type": "string", "format": "email", "description": "User's contact email" },
+        "age": { "type": "string", "description": "User's age" },
+        "concerns": { "type": "array", "items": { "type": "string" }, "description": "List of skin concerns" },
+        "sensitivityLevel": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "hormonalStage": { "type": "string", "enum": ["Standard", "Post-Partum", "Perimenopause", "Menopause", "Post-Menopause"] },
+        "stressLevel": { "type": "integer", "description": "Self-reported stress level 1-10" },
+        "sleepQuality": { "type": "string", "enum": ["Poor", "Average", "Excellent"] },
+        "waterIntake": { "type": "string", "enum": ["Low", "Standard", "Optimal"] },
+        "dietaryProfile": { "type": "string" },
+        "activityLevel": { "type": "string", "enum": ["Sedentary", "Moderate", "Active"] },
+        "caffeineIntake": { "type": "string", "enum": ["None", "Moderate", "High"] },
+        "currentRoutine": { "type": "string" },
+        "professionalHistory": { "type": "string" },
+        "goals": { "type": "string" },
+        "investmentPreference": { "type": "string", "enum": ["Home Care Focus", "Hybrid (Home + Clinical)", "Full Clinical Protocol"] },
+        "primaryIntent": { "type": "string" },
+        "clinicalFocus": { "type": "array", "items": { "type": "string" } },
+        "stepFeedback": { "type": "object", "additionalProperties": { "type": "string" }, "description": "User feedback per assessment step" },
+        "clinicalResponse": { "type": "string", "description": "Professional response sent back to the client" },
+        "clinicalInsights": {
+          "type": "object",
+          "properties": {
+            "analysis": { "type": "string" },
+            "solutions": { "type": "array", "items": { "type": "string" } },
+            "recommendedProducts": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "professionalNotes": { "type": "string", "description": "Notes added by the clinical professional" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "scheduled"] }
+      },
+      "required": ["fullName", "email", "concerns", "hormonalStage", "stressLevel"]
+    },
+    "Admin": {
+      "title": "Clinical Administrator",
+      "description": "User with high-level access to clinical data and system settings.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "professional", "specialist"] },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role"]
+    },
+    "Settings": {
+      "title": "System Settings",
+      "description": "Global clinical configurations",
+      "type": "object",
+      "properties": {
+        "days": { 
+          "type": "object",
+          "description": "Operating hours mapped by day name"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/assessments/{assessmentId}": {
+      "schema": "Assessment",
+      "description": "Collection of submitted skin intelligence assessments."
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Registered clinical administrators."
+    },
+    "/settings/operatingHours": {
+      "schema": "Settings",
+      "description": "Global operating hours configuration."
+    }
+  }
+}

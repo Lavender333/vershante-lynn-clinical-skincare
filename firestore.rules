@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email == 'antoinetteqwilliams@gmail.com' || 
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
+    }
+
+    // --- Entity Validation: Admin ---
+    function isValidAdmin(data) {
+      return data.email is string 
+        && data.role in ['admin', 'professional', 'specialist']
+        && data.addedAt == request.time;
+    }
+
+    // --- Admins Collection ---
+    match /admins/{adminId} {
+      allow get: if isSignedIn();
+      allow list, create, update, delete: if isAdmin();
+    }
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // --- Entity Validation: Assessment ---
+    function isValidAssessment(data) {
+      return data.fullName is string
+        && data.email is string
+        && data.concerns is list
+        && data.dietaryProfile is list
+        && data.clinicalFocus is list
+        && data.status in ['pending', 'scheduled'];
+    }
+
+    // --- Assessments Collection ---
+    match /assessments/{assessmentId} {
+      // Create: Publicly allowed if it has the core identity fields
+      allow create: if isValidId(assessmentId) 
+        && incoming().fullName is string
+        && incoming().email is string
+        && incoming().status == 'pending'
+        && incoming().createdAt == request.time;
+
+      // Update: User can update their own slot, or admin can update anything
+      allow update: if isAdmin() || (
+        isSignedIn() && existing().userId == request.auth.uid &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'consultationSlot'])
+      );
+
+      // Read/Delete: Admin only or Owner can read
+      allow get, list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // --- Settings Collection ---
+    match /settings/operatingHours {
+      allow read: if true; // Public read: booking calendar needs this without auth
+      allow write: if isAdmin();
+    }
+  }
+}
