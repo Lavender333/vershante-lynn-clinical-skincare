@@ -76,6 +76,9 @@ export default function ClientDashboard() {
   const [newDisplayName, setNewDisplayName] = useState('');
   const [updatingProfile, setUpdatingProfile] = useState(false);
 
+  // Session Prep Modal
+  const [showPrepModal, setShowPrepModal] = useState(false);
+
   // Auth State
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -503,8 +506,17 @@ export default function ClientDashboard() {
                                 </p>
                             </div>
                         </div>
-                        <button className="bg-brand-cream text-brand-slate px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-brand-terracotta hover:text-white transition-all shadow-lg">
-                            Prepare for Session
+                        <button
+                            onClick={() => {
+                              if (upcomingConsultation.consultationSlot?.type === 'Virtual') {
+                                const meetingId = upcomingConsultation.meetingId || `vershante-lynn-${upcomingConsultation.id.slice(0, 8)}`;
+                                window.open(`https://meet.jit.si/${meetingId}`, '_blank');
+                              } else {
+                                setShowPrepModal(true);
+                              }
+                            }}
+                            className="bg-brand-cream text-brand-slate px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-brand-terracotta hover:text-white transition-all shadow-lg">
+                            {upcomingConsultation.consultationSlot?.type === 'Virtual' ? 'Join Video Session' : 'Prepare for Session'}
                         </button>
                     </div>
                 </motion.div>
@@ -776,6 +788,65 @@ export default function ClientDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Session Prep Modal */}
+      {showPrepModal && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowPrepModal(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            onClick={e => e.stopPropagation()}
+            className="bg-brand-cream rounded-[2rem] p-8 max-w-md w-full shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-1">Session Preparation</p>
+                <h2 className="text-2xl font-serif italic text-brand-slate">Getting Ready</h2>
+              </div>
+              <button
+                onClick={() => setShowPrepModal(false)}
+                className="p-2 hover:bg-brand-sand/40 rounded-full text-brand-moss transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              {[
+                { icon: '🧴', title: 'Come with a clean face', desc: 'Remove all makeup and skincare products before your session.' },
+                { icon: '💧', title: 'Stay hydrated', desc: 'Drink water the morning of your appointment for accurate skin readings.' },
+                { icon: '📋', title: 'List your current products', desc: 'Bring or note all products currently in your skincare routine.' },
+                { icon: '📸', title: 'Take a before photo', desc: 'Capture your skin in natural light for your personal records.' },
+                { icon: '📝', title: 'Note any changes', desc: 'Think about any skin changes or concerns since your last assessment.' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3 bg-white rounded-2xl p-4 border border-brand-sand">
+                  <span className="text-xl leading-none mt-0.5">{item.icon}</span>
+                  <div>
+                    <p className="text-sm font-bold text-brand-slate">{item.title}</p>
+                    <p className="text-xs text-brand-moss/60 mt-0.5">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-brand-slate text-white rounded-2xl p-4 text-center">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-brand-terracotta mb-1">Your Appointment</p>
+              <p className="text-lg font-serif italic">
+                {upcomingConsultation?.consultationSlot?.date
+                  ? new Date(upcomingConsultation.consultationSlot.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                  : ''}
+              </p>
+              <p className="text-sm text-white/60 mt-1">
+                {upcomingConsultation?.consultationSlot?.time} — {upcomingConsultation?.consultationSlot?.type} Session
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
