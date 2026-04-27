@@ -13,7 +13,9 @@ import {
   onAuthStateChanged, 
   signOut,
   User,
-  updateProfile
+  updateProfile,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
 } from 'firebase/auth';
 import { 
   FlaskConical, 
@@ -37,7 +39,9 @@ import {
   Edit2,
   Save,
   X,
-  Download
+  Download,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
@@ -61,8 +65,8 @@ interface AssessmentRecord extends AssessmentData {
 }
 
 export default function ClientDashboard() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [loading, setLoading] = useState(!auth.currentUser);
   const [records, setRecords] = useState<AssessmentRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AssessmentRecord | null>(null);
   
@@ -70,6 +74,13 @@ export default function ClientDashboard() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState('');
   const [updatingProfile, setUpdatingProfile] = useState(false);
+
+  // Auth State
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -105,7 +116,28 @@ export default function ClientDashboard() {
     try {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      console.error(error.message);
+      setAuthError(error.message);
+    }
+  };
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    try {
+      if (authMode === 'login') {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+    } catch (error: any) {
+      const msg = error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password'
+        ? 'Incorrect email or password.'
+        : error.code === 'auth/user-not-found'
+        ? 'No account found with this email.'
+        : error.code === 'auth/email-already-in-use'
+        ? 'An account already exists with this email.'
+        : error.message;
+      setAuthError(msg);
     }
   };
 
@@ -202,40 +234,86 @@ export default function ClientDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-brand-cream">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="text-brand-moss"
-        >
-          <FlaskConical size={32} />
-        </motion.div>
-      </div>
-    );
+    return null;
   }
 
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-cream p-6 pt-32">
-        <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-12 border border-brand-sand text-center">
+        <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-12 border border-brand-sand">
           <div className="w-16 h-16 bg-brand-moss/10 rounded-2xl flex items-center justify-center text-brand-moss mx-auto mb-8">
             <UserIcon size={32} />
           </div>
-          <h1 className="text-3xl font-serif text-brand-slate italic mb-4">Intelligence Portal</h1>
-          <p className="text-brand-moss/60 font-light mb-10 leading-relaxed italic">
+          <h1 className="text-3xl font-serif text-brand-slate italic mb-2 text-center">Intelligence Portal</h1>
+          <p className="text-brand-moss/60 font-light mb-8 italic text-center text-sm leading-relaxed">
             "Access your skin intelligence records, consultation details, and clinical progress logs."
           </p>
 
+          <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase tracking-widest font-bold text-brand-moss pl-2">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="w-full bg-brand-cream border border-brand-sand rounded-full px-6 py-3 text-sm outline-none focus:border-brand-terracotta transition-colors"
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase tracking-widest font-bold text-brand-moss pl-2">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-brand-cream border border-brand-sand rounded-full px-6 py-3 text-sm outline-none focus:border-brand-terracotta transition-colors"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-moss/40 hover:text-brand-moss"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {authError && (
+              <p className="text-[10px] text-red-500 font-bold bg-red-50 p-3 rounded-xl border border-red-100 italic">
+                {authError}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-brand-moss text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-slate transition-all shadow-lg"
+            >
+              {authMode === 'login' ? 'Log In with Intelligence' : 'Create Account'}
+            </button>
+          </form>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-brand-sand"></div></div>
+            <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold"><span className="px-4 bg-white text-brand-sand">or</span></div>
+          </div>
+
           <button
             onClick={handleLogin}
-            className="w-full bg-brand-moss text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-slate transition-all shadow-lg flex items-center justify-center gap-2"
+            className="w-full bg-white border border-brand-sand text-brand-moss py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-cream transition-all flex items-center justify-center gap-2"
           >
-            Log in with Intelligence
+            Continue with Google
           </button>
-          
-          <p className="mt-8 text-[10px] text-brand-moss/40 uppercase tracking-widest font-bold">
-            Secure Clinical Access Only
+
+          <p className="mt-6 text-center text-[10px] text-brand-moss/40">
+            {authMode === 'login' ? (
+              <>New here? <button onClick={() => { setAuthMode('register'); setAuthError(null); }} className="text-brand-terracotta font-bold underline">Create an account</button></>
+            ) : (
+              <>Already registered? <button onClick={() => { setAuthMode('login'); setAuthError(null); }} className="text-brand-terracotta font-bold underline">Log in here</button></>
+            )}
           </p>
         </div>
       </div>

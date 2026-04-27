@@ -61,8 +61,8 @@ interface AssessmentRecord extends AssessmentData {
 }
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [loading, setLoading] = useState(!auth.currentUser);
   const [records, setRecords] = useState<AssessmentRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AssessmentRecord | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -464,17 +464,7 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-brand-cream">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="text-brand-moss"
-        >
-          <FlaskConical size={32} />
-        </motion.div>
-      </div>
-    );
+    return null;
   }
 
   if (!user || !isAdminState) {
