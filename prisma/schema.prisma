@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Assessment Submission
+model Assessment {
+  id                    String    @id @default(cuid())
+  userId                String?   @db.VarChar(255)  // Firebase UID if logged in
+  fullName              String    @db.VarChar(255)
+  email                 String    @db.VarChar(255)
+  age                   String    @db.VarChar(50)
+  concerns              String[]
+  sensitivityLevel      String    @db.VarChar(50)   // Low, Medium, High
+  hormonalStage         String    @db.VarChar(100)  // Standard, Post-Partum, etc.
+  stressLevel           Int       // 1-10
+  sleepQuality          String    @db.VarChar(50)   // Poor, Average, Excellent
+  waterIntake           String    @db.VarChar(50)   // Low, Standard, Optimal
+  dietaryProfile        String[]
+  activityLevel         String    @db.VarChar(50)   // Sedentary, Moderate, Active
+  caffeineIntake        String    @db.VarChar(50)   // None, Moderate, High
+  currentRoutine        String    @db.Text
+  professionalHistory   String    @db.Text
+  goals                 String    @db.Text
+  investmentPreference  String    @db.VarChar(100)  // The Home Ritual, The Signature Hybrid Flow, The Total Transformation
+  primaryIntent         String    @db.Text
+  clinicalFocus         String[]
+  stepFeedback          Json?                          // Record<string, string>
+  clinicalResponse      String?   @db.Text
+  meetingId             String?   @db.VarChar(255)
+  clinicalInsights      Json?                          // { analysis, solutions, recommendedProducts, confidenceScore }
+  professionalNotes     String?   @db.Text
+  status                String    @default("pending") @db.VarChar(50)  // pending, reviewed, scheduled, completed
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // Relationship to consultation slot
+  consultationSlot      ConsultationSlot?
+}
+
+// Operating Hours Configuration
+model OperatingHours {
+  id        String   @id @default("default")
+  dayConfig Json     // { Monday: { open, close, closed }, ... }
+  updatedAt DateTime @updatedAt
+}
+
+// Consultation Slots (generated from operating hours)
+model ConsultationSlot {
+  id           String   @id @default(cuid())
+  assessmentId String   @unique
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  date         String   @db.VarChar(50)  // YYYY-MM-DD
+  time         String   @db.VarChar(50)  // HH:MM
+  type         String   @db.VarChar(50)  // Virtual, In-Person
+  createdAt    DateTime @default(now())
+}
+
+// Team Members (for admin)
+model TeamMember {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  role      String   @db.VarChar(100)  // esthetician, admin, etc.
+  bio       String?  @db.Text
+  imageUrl  String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

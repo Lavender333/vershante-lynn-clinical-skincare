@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import AssessmentForm from '../components/AssessmentForm';
 import BookingCalendar from '../components/BookingCalendar';
 import { AssessmentData, ConsultationSlot } from '../types';
-import { generateClinicalInsights } from '../services/skinAnalysisService';
 import { Sparkles, Calendar, FlaskConical, MessageSquare, CheckCircle2, Loader2, Brain, ChevronRight, ListChecks, ShoppingBag, LogIn, ArrowUpRight } from 'lucide-react';
 import { db, auth } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
@@ -53,18 +52,14 @@ export default function AssessmentPage() {
   const handleAssessmentComplete = async (assessmentData: AssessmentData) => {
     setLoading(true);
     try {
-      // Generate AI insights first to include them in the document
-      const insights = await generateClinicalInsights(assessmentData);
-      const finalData = { ...assessmentData, clinicalInsights: insights };
-
       const docRef = await addDoc(collection(db, 'assessments'), {
-        ...finalData,
+        ...assessmentData,
         userId: user?.uid || null,
         createdAt: serverTimestamp(),
         status: 'pending'
       });
       setAssessmentId(docRef.id);
-      setData(finalData);
+      setData(assessmentData);
       setFlowStep('booking');
     } catch (error: any) {
       console.error('Assessment submission error:', error);
@@ -107,7 +102,7 @@ export default function AssessmentPage() {
               email: data.email,
               fullName: data.fullName,
               bookingDetails: {
-                date: new Date(slot.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+                date: new Date(slot.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
                 time: slot.time,
                 type: slot.type
               },
