@@ -10,6 +10,7 @@ import { db, auth } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { cn } from '../lib/utils';
+import { generateClinicalInsights } from '../services/skinAnalysisService';
 
 import BiologicalFlowChart from '../components/BiologicalFlowChart';
 
@@ -52,14 +53,18 @@ export default function AssessmentPage() {
   const handleAssessmentComplete = async (assessmentData: AssessmentData) => {
     setLoading(true);
     try {
+      // Run AI analysis before saving so clinicalInsights is stored with the record
+      const clinicalInsights = await generateClinicalInsights(assessmentData);
+      const enrichedData = { ...assessmentData, clinicalInsights };
+
       const docRef = await addDoc(collection(db, 'assessments'), {
-        ...assessmentData,
+        ...enrichedData,
         userId: user?.uid || null,
         createdAt: serverTimestamp(),
         status: 'pending'
       });
       setAssessmentId(docRef.id);
-      setData(assessmentData);
+      setData(enrichedData);
       setFlowStep('booking');
     } catch (error: any) {
       console.error('Assessment submission error:', error);
