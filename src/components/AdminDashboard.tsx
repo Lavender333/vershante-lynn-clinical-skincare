@@ -47,7 +47,8 @@ import {
   Video,
   Monitor,
   ExternalLink,
-  ChevronLeft
+  ChevronLeft,
+  CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AssessmentData, OperatingHours } from '../types';
@@ -1257,33 +1258,68 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-[#F9F6F2] p-8 rounded-[2rem] border border-brand-sand relative">
-                      <Sparkles className="absolute top-6 right-6 text-brand-terracotta/20" size={40} />
-                      <p className="text-sm font-light italic leading-relaxed text-brand-slate mb-8">
-                        "{selectedRecord.clinicalInsights?.analysis}"
-                      </p>
-                      <div className="grid md:grid-cols-2 gap-8">
-                        <div>
-                          <h4 className="text-[9px] uppercase font-bold text-brand-moss mb-3">Target Solutions</h4>
-                          <ul className="space-y-2">
-                            {selectedRecord.clinicalInsights?.solutions.map((s, i) => (
-                              <li key={i} className="text-xs text-brand-moss/80 flex gap-2">
-                                <span className="text-brand-terracotta">•</span> {s}
-                              </li>
-                            ))}
-                          </ul>
+                    <div className="space-y-4">
+                      {/* Confidence Score */}
+                      {selectedRecord.clinicalInsights?.confidenceScore != null && (
+                        <div className="flex items-center justify-between bg-brand-moss/5 border border-brand-moss/10 rounded-2xl px-5 py-3">
+                          <span className="text-[9px] uppercase font-bold tracking-widest text-brand-moss/60">Clinical Alignment Score</span>
+                          <div className="flex items-center gap-3">
+                            <div className="w-28 h-1.5 bg-brand-sand rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-brand-terracotta rounded-full"
+                                style={{ width: `${selectedRecord.clinicalInsights.confidenceScore}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-bold text-brand-terracotta">{selectedRecord.clinicalInsights.confidenceScore}%</span>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-[9px] uppercase font-bold text-brand-moss mb-3">Recommended Actives</h4>
-                          <ul className="space-y-2">
-                            {selectedRecord.clinicalInsights?.recommendedProducts.map((p, i) => (
-                              <li key={i} className="text-xs text-brand-moss/80 flex gap-2">
-                                <span className="text-brand-terracotta">•</span> {p}
-                              </li>
-                            ))}
-                          </ul>
+                      )}
+
+                      {/* Analysis */}
+                      <div className="bg-[#F9F6F2] rounded-2xl border border-brand-sand p-5 relative">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles size={13} className="text-brand-terracotta" />
+                          <span className="text-[9px] uppercase font-bold tracking-widest text-brand-terracotta">Skin Analysis</span>
                         </div>
+                        <p className="text-sm leading-relaxed text-brand-slate">
+                          {selectedRecord.clinicalInsights?.analysis}
+                        </p>
                       </div>
+
+                      {/* Solutions */}
+                      {(selectedRecord.clinicalInsights?.solutions?.length ?? 0) > 0 && (
+                        <div className="bg-white border border-brand-sand rounded-2xl p-5">
+                          <div className="flex items-center gap-2 mb-3">
+                            <CheckCircle2 size={13} className="text-brand-moss" />
+                            <span className="text-[9px] uppercase font-bold tracking-widest text-brand-moss">Target Solutions</span>
+                          </div>
+                          <ol className="space-y-2">
+                            {selectedRecord.clinicalInsights!.solutions.map((s, i) => (
+                              <li key={i} className="flex items-start gap-3 text-sm text-brand-slate">
+                                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-terracotta/10 text-brand-terracotta text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                                {s}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+
+                      {/* Products */}
+                      {(selectedRecord.clinicalInsights?.recommendedProducts?.length ?? 0) > 0 && (
+                        <div className="bg-white border border-brand-sand rounded-2xl p-5">
+                          <div className="flex items-center gap-2 mb-3">
+                            <FlaskConical size={13} className="text-brand-moss" />
+                            <span className="text-[9px] uppercase font-bold tracking-widest text-brand-moss">Recommended Actives</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedRecord.clinicalInsights!.recommendedProducts.map((p, i) => (
+                              <span key={i} className="inline-flex items-center gap-1.5 bg-brand-moss/10 text-brand-moss text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-brand-moss/20">
+                                {p}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </section>

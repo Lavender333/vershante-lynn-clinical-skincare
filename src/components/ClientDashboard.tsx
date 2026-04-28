@@ -711,14 +711,47 @@ export default function ClientDashboard() {
                                 </div>
                             )}
 
-                            <div className="bg-brand-sand/10 p-6 rounded-2xl">
-                                <div className="flex items-center gap-2 text-brand-terracotta mb-4">
-                                    <Sparkles size={16} />
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-brand-terracotta">
+                                    <Sparkles size={14} />
                                     <span className="text-[10px] uppercase font-bold tracking-widest">Digital Diagnostic</span>
                                 </div>
-                                <p className="text-sm font-light italic leading-relaxed text-brand-slate">
-                                    "{selectedRecord.clinicalInsights?.analysis}"
-                                </p>
+
+                                {/* Confidence Score */}
+                                {selectedRecord.clinicalInsights?.confidenceScore != null && (
+                                    <div className="flex items-center justify-between bg-brand-moss/5 border border-brand-moss/10 rounded-xl px-4 py-2.5">
+                                        <span className="text-[9px] uppercase font-bold tracking-widest text-brand-moss/60">Alignment Score</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-20 h-1.5 bg-brand-sand rounded-full overflow-hidden">
+                                                <div className="h-full bg-brand-terracotta rounded-full" style={{ width: `${selectedRecord.clinicalInsights.confidenceScore}%` }} />
+                                            </div>
+                                            <span className="text-xs font-bold text-brand-terracotta">{selectedRecord.clinicalInsights.confidenceScore}%</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Analysis */}
+                                <div className="bg-brand-sand/10 rounded-2xl border border-brand-sand/50 p-4">
+                                    <p className="text-[9px] uppercase font-bold tracking-widest text-brand-moss/50 mb-2">Skin Analysis</p>
+                                    <p className="text-sm leading-relaxed text-brand-slate">
+                                        {selectedRecord.clinicalInsights?.analysis}
+                                    </p>
+                                </div>
+
+                                {/* Solutions */}
+                                {(selectedRecord.clinicalInsights?.solutions?.length ?? 0) > 0 && (
+                                    <div className="bg-white rounded-2xl border border-brand-sand/50 p-4">
+                                        <p className="text-[9px] uppercase font-bold tracking-widest text-brand-moss/50 mb-3">Recommended Actions</p>
+                                        <ol className="space-y-2">
+                                            {selectedRecord.clinicalInsights!.solutions.map((s, i) => (
+                                                <li key={i} className="flex items-start gap-3 text-sm text-brand-slate">
+                                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-terracotta/10 text-brand-terracotta text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                                                    {s}
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    </div>
+                                )}
                             </div>
 
                             {selectedRecord.consultationSlot && (
