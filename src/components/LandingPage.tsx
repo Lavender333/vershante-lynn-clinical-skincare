@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Sparkles, Brain, FlaskConical, Quote, ArrowRight, ShieldCheck, Zap, Heart } from 'lucide-react';
 
 export default function LandingPage() {
+  const isAdmin = import.meta.env.VITE_IS_ADMIN === 'true';
   return (
     <div className="pt-20">
       {/* Hero Section */}
@@ -31,15 +32,17 @@ export default function LandingPage() {
               Expert clinical skincare for those navigating hormonal shifts, cortisol stress, and profound sensitivity.
             </p>
             
-            <div className="flex flex-wrap gap-4">
-              <Link 
-                to="/assessment"
-                className="bg-brand-moss text-white px-10 py-5 rounded-full text-[12px] uppercase tracking-[0.2em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-moss/30"
-              >
-                Start Assessment
-                <Brain size={18} />
-              </Link>
-            </div>
+            {isAdmin && (
+              <div className="flex flex-wrap gap-4">
+                <Link 
+                  to="/assessment"
+                  className="bg-brand-moss text-white px-10 py-5 rounded-full text-[12px] uppercase tracking-[0.2em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-moss/30"
+                >
+                  Start Assessment
+                  <Brain size={18} />
+                </Link>
+              </div>
+            )}
           </motion.div>
           
           <motion.div
@@ -172,13 +175,15 @@ export default function LandingPage() {
               </div>
             </div>
             
-            <Link 
-              to="/assessment"
-              className="inline-flex items-center gap-3 text-brand-terracotta border-b-2 border-brand-terracotta pb-1 font-bold uppercase tracking-widest hover:gap-6 transition-all"
-            >
-              Begin Your 01
-              <ArrowRight size={20} />
-            </Link>
+            {isAdmin && (
+              <Link 
+                to="/assessment"
+                className="inline-flex items-center gap-3 text-brand-terracotta border-b-2 border-brand-terracotta pb-1 font-bold uppercase tracking-widest hover:gap-6 transition-all"
+              >
+                Begin Your 01
+                <ArrowRight size={20} />
+              </Link>
+            )}
           </div>
         </div>
       </motion.section>
@@ -196,12 +201,14 @@ export default function LandingPage() {
           <p className="text-lg text-brand-cream/60 font-light">
             We prioritize education and long-term health over "one and done" fixes. Start your journey with our clinical assessment.
           </p>
-          <Link 
-            to="/assessment"
-            className="inline-block bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-2xl"
-          >
-            Access Assessment Form
-          </Link>
+          {isAdmin && (
+            <Link 
+              to="/assessment"
+              className="inline-block bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-2xl"
+            >
+              Access Assessment Form
+            </Link>
+          )}
         </div>
       </motion.section>
     </div>
