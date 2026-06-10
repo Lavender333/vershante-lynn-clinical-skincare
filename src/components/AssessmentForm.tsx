@@ -5,53 +5,67 @@ import { cn } from '../lib/utils';
 import { AssessmentData } from '../types';
 
 const STEPS = [
-  { id: 'basics', title: 'The Basics' },
-  { id: 'clinical', title: 'Clinical Context' },
-  { id: 'focus', title: 'Clinical Focus' },
-  { id: 'lifestyle', title: 'Lifestyle & Flow' },
-  { id: 'goals', title: 'Your Intent' }
+  { id: 'clientInfo', title: 'Client Information' },
+  { id: 'concerns', title: 'Skin Concerns' },
+  { id: 'history', title: 'Skin History' },
+  { id: 'routine', title: 'Routine Review' },
+  { id: 'lifestyle', title: 'Lifestyle' },
+  { id: 'hormonal', title: 'Health History' },
+  { id: 'treatment', title: 'Treatment History' },
+  { id: 'goals', title: 'Skin Goals' },
+  { id: 'images', title: 'Image Submission' },
+  { id: 'professional', title: 'Professional Use' }
 ];
+
+const STEP_MICROCOPY: Record<string, string> = {
+  clientInfo: 'Begin with the fundamentals — precise, intentional details help guide clinical decisions.',
+  concerns: "Select the concerns most present today — we'll map patterns, not just symptoms.",
+  history: 'Share recurring cycles, triggers, and what has (or hasn\'t) worked.',
+  routine: 'Detail your morning and evening rituals — order and frequency matter.',
+  lifestyle: 'Context shapes skin behavior — hydration, sleep, and stress are relevant.',
+  hormonal: 'Biological context can change barrier and pigment response — be candid.',
+  treatment: 'List prior corrective care and any notable reactions or downtime.',
+  goals: 'Define outcomes clearly — clinical progress is strategic and measurable.',
+  images: 'Natural light, no filters — visual documentation supports accurate analysis.',
+  professional: 'Reserved for clinician synthesis and recommended clinical pathway.'
+};
 
 const CONCERNS = [
-  { id: 'Sensitivity', desc: 'Reactive responses to environmental triggers and ingredient profiles.' },
-  { id: 'Hyperpigmentation', desc: 'Visible marking from melanin clusters or melasma.' },
-  { id: 'Texture', desc: 'Surface irregularities, rough patches, or open pores.' },
-  { id: 'Dullness', desc: 'Loss of luminosity and sluggish cellular turnover.' },
-  { id: 'Elasticity', desc: 'Compromised bounce and firmness in the dermal layer.' },
-  { id: 'Acne', desc: 'Active congestion from hormonal shifts or inflammation.' },
-  { id: 'Redness', desc: 'Vascular reactivity and chronic flushing or barrier fatigue.' }
+  { id: 'Hyperpigmentation / dark marks', desc: 'Visible melanin clusters, dark spots, or uneven tone.' },
+  { id: 'Uneven skin tone', desc: 'Areas of imbalance across texture and color.' },
+  { id: 'Sensitivity or irritation', desc: 'Reactive responses to products or environmental triggers.' },
+  { id: 'Redness or inflammation', desc: 'Vascular reactivity, flushing, or barrier distress.' },
+  { id: 'Breakouts or congestion', desc: 'Clogged pores, blemishes, and compromised renewal.' },
+  { id: 'Texture or roughness', desc: 'Surface irregularities and uneven hydration.' },
+  { id: 'Dryness or dehydration', desc: 'Lack of moisture, barrier fatigue, or tightness.' },
+  { id: 'Fine lines or visible aging', desc: 'Early textural change and concerns around firmness.' },
+  { id: 'Loss of firmness or glow', desc: 'Dullness, laxity, and diminished radiance.' },
+  { id: 'Scarring', desc: 'Post-inflammatory or procedural marks and relief concerns.' }
 ];
 
-const FOCUS_AREAS = [
-  { name: 'Cortisol & Stress', desc: 'Managing skin reactions triggered by high-cortisol lifestyle.' },
-  { name: 'Postpartum Skincare', desc: 'Restoring balance after significant biological and hormonal shifts.' },
-  { name: 'Menopause Intelligence', desc: 'Deep hydration and elasticity restoration for the evolving skin barrier.' },
-  { name: 'Hyperpigmentation Patterns', desc: 'Targeted correction for melanin-rich skin and persistent marking.' },
-  { name: 'Perimenopausal Congestion', desc: 'Addressing adult acne results from fluctuating estrogen levels.' },
-  { name: 'Epidermal Barrier Recovery', desc: 'Healing over-processed skin and chronic inflammation/sensitization.' },
-  { name: 'Circadian Skin Rhythm', desc: 'Optimizing the skin repair cycle impacted by fragmented sleep.' },
-  { name: 'Periorbital Ecology', desc: 'Structural care for lymphatic drainage and thinning dermal layers around eyes.' },
-  { name: 'Environmental Resilience', desc: 'Mapping oxidative damage from blue light and urban pollution.' }
+const TREATMENT_OPTIONS = [
+  'Chemical peels',
+  'Microneedling',
+  'Laser treatments',
+  'Dermaplaning',
+  'LED therapy',
+  'Prescription skincare'
 ];
 
-const DIETARY_OPTIONS = [
-  'Anti-Inflammatory',
-  'Plant-Based',
-  'High Protein',
-  'Ketogenic',
-  'Standard/Varied',
-  'Dairy-Free',
-  'Sugar-Conscious',
-  'Intermittent Fasting'
-];
-
-const STORAGE_KEY = 'vershante_diagnostic_progress';
+const STORAGE_KEY = 'vershante_diagnostic_progress_v2';
 
 export default function AssessmentForm({ onComplete }: { onComplete: (data: AssessmentData) => void }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<AssessmentData>({
     fullName: '',
+    preferredName: '',
+    dob: '',
+    phoneNumber: '',
     email: '',
+    occupation: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    referralSource: '',
     age: '',
     concerns: [],
     sensitivityLevel: 'Medium',
@@ -63,17 +77,56 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
     activityLevel: 'Moderate',
     caffeineIntake: 'Moderate',
     currentRoutine: '',
+    morningRoutine: '',
+    eveningRoutine: '',
+    routineDuration: '',
+    productChangeFrequency: '',
+    productReactions: '',
     professionalHistory: '',
-    goals: '',
-    investmentPreference: 'The Signature Hybrid Flow',
+    skinHistorySummary: '',
+    treatmentsTried: '',
+    temporaryHelp: '',
+    worsenedBy: '',
+    recurringCycles: '',
+    supplements: '',
+    exerciseHabits: '',
+    lifestyleFactors: '',
+    hormonalImbalance: false,
+    pcos: false,
+    fibroids: false,
+    thyroidImbalance: false,
+    insulinResistance: false,
+    eczemaPsoriasis: false,
+    digestiveConcerns: false,
+    currentMedications: '',
+    treatmentHistory: [],
+    previousReactions: '',
+    desiredOutcome: '',
+    topGoals: '',
+    commitmentLevel: '',
+    opennessToCorrectiveCare: '',
+    frontPhotoNotes: '',
+    leftPhotoNotes: '',
+    rightPhotoNotes: '',
     primaryIntent: '',
     clinicalFocus: [],
-    stepFeedback: {}
+    stepFeedback: {},
+    clinicalInsights: { analysis: '', solutions: [], recommendedProducts: [], confidenceScore: 0 },
+    professionalPrimaryConcerns: '',
+    professionalSkinBehavior: '',
+    professionalBarrierStatus: '',
+    professionalInflammationLevel: '',
+    professionalPigmentClassification: '',
+    professionalTriggerPatterns: '',
+    professionalRecommendedTreatmentPathway: '',
+    professionalRecommendedHomecare: '',
+    professionalNotes: '',
+    consultationSlot: { date: '', time: '', type: 'Virtual' },
+    status: 'pending'
   });
 
   const [hasRestored, setHasRestored] = useState(false);
 
-  // Load progress on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -82,13 +135,12 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
         setFormData(data);
         setCurrentStep(step);
       } catch (e) {
-        console.error("Diagnostic restoration failed:", e);
+        console.error('Diagnostic restoration failed:', e);
       }
     }
     setHasRestored(true);
   }, []);
 
-  // Auto-save on changes
   useEffect(() => {
     if (hasRestored) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -120,30 +172,43 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
     }));
   };
 
-  const toggleFocus = (focus: string) => {
+  const toggleTreatment = (treatment: string) => {
     setFormData(prev => ({
       ...prev,
-      clinicalFocus: prev.clinicalFocus.includes(focus)
-        ? prev.clinicalFocus.filter(f => f !== focus)
-        : [...prev.clinicalFocus, focus]
+      treatmentHistory: prev.treatmentHistory.includes(treatment)
+        ? prev.treatmentHistory.filter(c => c !== treatment)
+        : [...prev.treatmentHistory, treatment]
     }));
   };
 
-  const toggleDiet = (diet: string) => {
+  const toggleCondition = (field: 'hormonalImbalance' | 'pcos' | 'fibroids' | 'thyroidImbalance' | 'insulinResistance' | 'eczemaPsoriasis' | 'digestiveConcerns') => {
     setFormData(prev => ({
       ...prev,
-      dietaryProfile: prev.dietaryProfile.includes(diet)
-        ? prev.dietaryProfile.filter(d => d !== diet)
-        : [...prev.dietaryProfile, diet]
+      [field]: !prev[field]
     }));
   };
 
   const isStepValid = () => {
-    if (currentStep === 0) return formData.fullName && formData.email && formData.age;
-    if (currentStep === 1) return formData.concerns.length > 0;
-    if (currentStep === 2) return formData.clinicalFocus.length > 0;
-    if (currentStep === 4) return formData.primaryIntent.length > 10;
-    return true;
+    switch (currentStep) {
+      case 0:
+        return Boolean(formData.fullName && formData.email && formData.phoneNumber);
+      case 1:
+        return formData.concerns.length > 0;
+      case 2:
+        return Boolean(formData.skinHistorySummary || formData.treatmentsTried || formData.recurringCycles);
+      case 3:
+        return Boolean(formData.morningRoutine || formData.eveningRoutine);
+      case 4:
+        return Boolean(formData.sleepQuality && formData.waterIntake);
+      case 5:
+        return true;
+      case 6:
+        return formData.treatmentHistory.length > 0;
+      case 7:
+        return Boolean(formData.primaryIntent || formData.topGoals);
+      default:
+        return true;
+    }
   };
 
   return (
@@ -156,34 +221,33 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
         <span className="text-[10px] uppercase tracking-[0.4em] font-black text-brand-terracotta/60">
           Intelligence Protocol: Step {currentStep + 1} of {STEPS.length}
         </span>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: hasRestored ? [0, 1, 0] : 0 }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
           className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[8px] uppercase tracking-widest text-brand-moss/40 font-bold"
         >
           <Save size={10} />
-          <span>Auto-Save Encrypted</span>
+          <span>Auto-Save In Progress</span>
         </motion.div>
       </div>
 
-      <div className="flex justify-between mb-12">
+      <div className="flex justify-between mb-12 overflow-x-auto pb-4 gap-3">
         {STEPS.map((step, idx) => (
-          <div key={step.id} className="flex flex-col items-center gap-2 relative z-10">
-            <div 
+          <div key={step.id} className="flex flex-col items-center gap-2 min-w-[6rem]">
+            <div
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500",
-                idx === currentStep ? "border-brand-terracotta bg-brand-terracotta text-white" : 
-                idx < currentStep ? "border-brand-moss bg-brand-moss text-white" : "border-brand-sand text-brand-sand"
+                'w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-500',
+                idx === currentStep ? 'border-brand-terracotta bg-brand-terracotta text-white' :
+                idx < currentStep ? 'border-brand-moss bg-brand-moss text-white' : 'border-brand-sand text-brand-sand'
               )}
-              aria-current={idx === currentStep ? "step" : undefined}
+              aria-current={idx === currentStep ? 'step' : undefined}
             >
-              {idx < currentStep ? <Check size={20} /> : idx + 1}
+              {idx < currentStep ? <Check size={16} /> : idx + 1}
             </div>
             <span className={cn(
-              "text-[9px] uppercase tracking-widest font-bold text-center w-max mt-1",
-              idx === currentStep ? "text-brand-slate" : 
-              idx < currentStep ? "text-brand-moss" : "text-brand-sand/60"
+              'text-[9px] uppercase tracking-widest font-bold text-center w-full',
+              idx === currentStep ? 'text-brand-slate' : idx < currentStep ? 'text-brand-moss' : 'text-brand-sand/60'
             )}>
               {step.title}
             </span>
@@ -192,49 +256,118 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div 
+        <motion.div
           key={currentStep}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.3 }}
-          className="min-h-[400px] py-4 flex flex-col"
+          className="min-h-[420px] py-4 flex flex-col"
         >
           <div className="flex-grow">
+            <p className="text-[11px] italic text-brand-slate/60 mb-2">We don't guess. We assess. Your skin follows patterns.</p>
+            <p className="text-sm text-brand-moss/60 mb-6">{STEP_MICROCOPY[STEPS[currentStep].id]}</p>
             {currentStep === 0 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-serif text-brand-slate italic">Beginning the Dialogue</h2>
-                  <p className="text-brand-moss/80 font-light">Let's start with who you are.</p>
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Client Information</h2>
+                  <p className="text-brand-moss/80 font-light">Begin with the fundamentals of your profile and referral source.</p>
                 </div>
                 <div className="grid gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Full Name</label>
-                    <input 
-                      type="text" 
-                      value={formData.fullName}
-                      onChange={e => setFormData({...formData, fullName: e.target.value})}
-                      placeholder="Lauren Adams"
-                      className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
-                    />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Full Name</label>
+                      <input
+                        type="text"
+                        value={formData.fullName}
+                        onChange={e => setFormData({ ...formData, fullName: e.target.value })}
+                        placeholder="Aaliyah Johnson"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Preferred Name</label>
+                      <input
+                        type="text"
+                        value={formData.preferredName}
+                        onChange={e => setFormData({ ...formData, preferredName: e.target.value })}
+                        placeholder="Ali"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Date of Birth</label>
+                      <input
+                        type="date"
+                        value={formData.dob}
+                        onChange={e => setFormData({ ...formData, dob: e.target.value })}
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={formData.phoneNumber}
+                        onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
+                        placeholder="(555) 123-4567"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Email Address</label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="you@domain.com"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Occupation</label>
+                      <input
+                        type="text"
+                        value={formData.occupation}
+                        onChange={e => setFormData({ ...formData, occupation: e.target.value })}
+                        placeholder="Creative Director"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Emergency Contact Name</label>
+                      <input
+                        type="text"
+                        value={formData.emergencyContactName}
+                        onChange={e => setFormData({ ...formData, emergencyContactName: e.target.value })}
+                        placeholder="Monique Brooks"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Emergency Contact Phone</label>
+                      <input
+                        type="tel"
+                        value={formData.emergencyContactPhone}
+                        onChange={e => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
+                        placeholder="(555) 987-6543"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Email Intelligence</label>
-                    <input 
-                      type="email" 
-                      value={formData.email}
-                      onChange={e => setFormData({...formData, email: e.target.value})}
-                      placeholder="intelligence@skin.com"
-                      className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Age</label>
-                    <input 
-                      type="number" 
-                      value={formData.age}
-                      onChange={e => setFormData({...formData, age: e.target.value})}
-                      placeholder="35"
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">How did you hear about Vershanté Lynn Aesthetics?</label>
+                    <input
+                      type="text"
+                      value={formData.referralSource}
+                      onChange={e => setFormData({ ...formData, referralSource: e.target.value })}
+                      placeholder="Instagram, referral, search, etc."
                       className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
                     />
                   </div>
@@ -245,8 +378,8 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-serif text-brand-slate italic">Clinical Observations</h2>
-                  <p className="text-brand-moss/80 font-light italic">"Identify the patterns you observe in your skin."</p>
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Your Skin Concerns</h2>
+                  <p className="text-brand-moss/80 font-light">Choose the areas of focus that are most present in your skin today.</p>
                 </div>
                 <div className="grid gap-4 py-2">
                   {CONCERNS.map((concern) => {
@@ -258,21 +391,21 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
                         onClick={() => toggleConcern(concern.id)}
                         aria-pressed={isSelected}
                         className={cn(
-                          "w-full p-6 rounded-[1.5rem] border text-left transition-all flex justify-between items-center group relative shadow-sm",
-                          isSelected 
-                            ? "bg-brand-moss text-white border-brand-moss ring-2 ring-brand-terracotta/20 shadow-md translate-x-2" 
-                            : "bg-white border-brand-sand hover:border-brand-moss text-brand-slate"
+                          'w-full p-6 rounded-[1.5rem] border text-left transition-all flex justify-between items-center group relative shadow-sm',
+                          isSelected
+                            ? 'bg-brand-moss text-white border-brand-moss ring-2 ring-brand-terracotta/20 shadow-md translate-x-2'
+                            : 'bg-white border-brand-sand hover:border-brand-moss text-brand-slate'
                         )}
                       >
                         <div className="space-y-2">
                           <p className="font-serif italic text-xl leading-none">{concern.id}</p>
-                          <p className={cn("text-xs font-light leading-relaxed max-w-[280px]", isSelected ? "text-brand-cream/80" : "text-brand-moss/70")}>
+                          <p className={cn('text-xs font-light leading-relaxed max-w-[280px]', isSelected ? 'text-brand-cream/80' : 'text-brand-moss/70')}>
                             {concern.desc}
                           </p>
                         </div>
                         <div className={cn(
-                          "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ml-4",
-                          isSelected ? "bg-brand-terracotta border-brand-terracotta" : "border-brand-sand"
+                          'w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ml-4',
+                          isSelected ? 'bg-brand-terracotta border-brand-terracotta' : 'border-brand-sand'
                         )}>
                           {isSelected && <Check size={14} className="text-white" />}
                         </div>
@@ -286,40 +419,59 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-serif text-brand-slate italic underline decoration-brand-terracotta/30">Clinical Focus</h2>
-                  <p className="text-brand-moss/80 font-light italic">"Select the disciplines that will anchor our diagnostic effort."</p>
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Skin History & Patterns</h2>
+                  <p className="text-brand-moss/80 font-light">Tell me how your skin has responded over time so I can identify recurring behavior and triggers.</p>
                 </div>
-                <div className="grid gap-4 py-2">
-                  {FOCUS_AREAS.map((focus) => {
-                    const isSelected = formData.clinicalFocus.includes(focus.name);
-                    return (
-                      <button
-                        key={focus.name}
-                        type="button"
-                        onClick={() => toggleFocus(focus.name)}
-                        aria-pressed={isSelected}
-                        className={cn(
-                          "w-full p-6 rounded-[1.5rem] border text-left transition-all flex justify-between items-center group relative shadow-sm",
-                          isSelected 
-                            ? "bg-brand-slate text-white border-brand-slate ring-2 ring-brand-terracotta/20 shadow-md transform translate-x-2" 
-                            : "bg-white border-brand-sand hover:border-brand-moss text-brand-slate"
-                        )}
-                      >
-                        <div className="space-y-2">
-                          <p className="font-serif italic text-xl leading-none">{focus.name}</p>
-                          <p className={cn("text-xs font-light leading-relaxed max-w-[280px]", isSelected ? "text-brand-sand/90" : "text-brand-moss/70")}>
-                            {focus.desc}
-                          </p>
-                        </div>
-                        <div className={cn(
-                          "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ml-4",
-                          isSelected ? "bg-brand-terracotta border-brand-terracotta" : "border-brand-sand"
-                        )}>
-                          {isSelected && <Check size={14} className="text-white" />}
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="space-y-6">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Have you worked with a skincare professional before?</label>
+                    <textarea
+                      value={formData.skinHistorySummary}
+                      onChange={e => setFormData({ ...formData, skinHistorySummary: e.target.value })}
+                      placeholder="Briefly describe your experience with professional care."
+                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">What treatments or products have you tried previously?</label>
+                      <textarea
+                        value={formData.treatmentsTried}
+                        onChange={e => setFormData({ ...formData, treatmentsTried: e.target.value })}
+                        placeholder="List treatments, products, prescription skincare, etc."
+                        className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Did anything help temporarily?</label>
+                      <textarea
+                        value={formData.temporaryHelp}
+                        onChange={e => setFormData({ ...formData, temporaryHelp: e.target.value })}
+                        placeholder="Note any quick improvements or short-lived results."
+                        className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Did anything make your skin worse?</label>
+                      <textarea
+                        value={formData.worsenedBy}
+                        onChange={e => setFormData({ ...formData, worsenedBy: e.target.value })}
+                        placeholder="Record any products, treatments, or habits that increased irritation."
+                        className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Describe recurring cycles or changes you notice.</label>
+                      <textarea
+                        value={formData.recurringCycles}
+                        onChange={e => setFormData({ ...formData, recurringCycles: e.target.value })}
+                        placeholder="Include timing, triggers, and any pattern of fluctuation."
+                        className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -327,160 +479,59 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-serif text-brand-slate italic">Lifestyle & Flow</h2>
-                  <p className="text-brand-moss/80 font-light">Mapping the circulatory and inflammatory rhythms of your biological state.</p>
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Product & Routine Review</h2>
+                  <p className="text-brand-moss/80 font-light">Provide a precise view of your current homecare, frequency, and reactions.</p>
                 </div>
                 <div className="space-y-6">
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">Hormonal Context</label>
-                    <div className="flex flex-wrap gap-2">
-                      {['Standard', 'Post-Partum', 'Perimenopause', 'Menopause', 'Post-Menopause'].map(stage => (
-                        <button
-                          key={stage}
-                          type="button"
-                          onClick={() => setFormData({...formData, hormonalStage: stage as any})}
-                          aria-pressed={formData.hormonalStage === stage}
-                          className={cn(
-                            "px-4 py-2 rounded-full border text-xs transition-all",
-                            formData.hormonalStage === stage 
-                              ? "bg-brand-terracotta text-white border-brand-terracotta" 
-                              : "bg-transparent border-brand-sand hover:border-brand-terracotta text-brand-moss"
-                          )}
-                        >
-                          {stage}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">Sleep Intelligence</label>
-                      <div className="flex gap-2">
-                        {['Poor', 'Average', 'Excellent'].map(choice => (
-                          <button
-                            key={choice}
-                            type="button"
-                            onClick={() => setFormData({...formData, sleepQuality: choice as any})}
-                            aria-pressed={formData.sleepQuality === choice}
-                            className={cn(
-                              "flex-1 py-2 rounded-xl border text-[10px] uppercase font-bold transition-all",
-                              formData.sleepQuality === choice 
-                                ? "bg-brand-moss text-white" 
-                                : "bg-brand-cream border-brand-sand text-brand-moss"
-                            )}
-                          >
-                            {choice}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">Hydration Level</label>
-                      <div className="flex gap-2">
-                        {['Low', 'Standard', 'Optimal'].map(choice => (
-                          <button
-                            key={choice}
-                            type="button"
-                            onClick={() => setFormData({...formData, waterIntake: choice as any})}
-                            aria-pressed={formData.waterIntake === choice}
-                            className={cn(
-                              "flex-1 py-2 rounded-xl border text-[10px] uppercase font-bold transition-all",
-                              formData.waterIntake === choice 
-                                ? "bg-brand-moss text-white" 
-                                : "bg-brand-cream border-brand-sand text-brand-moss"
-                            )}
-                          >
-                            {choice}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">Activity Level</label>
-                      <div className="flex gap-2">
-                        {['Sedentary', 'Moderate', 'Active'].map(choice => (
-                          <button
-                            key={choice}
-                            type="button"
-                            onClick={() => setFormData({...formData, activityLevel: choice as any})}
-                            aria-pressed={formData.activityLevel === choice}
-                            className={cn(
-                              "flex-1 py-2 rounded-xl border text-[9px] uppercase font-bold transition-all",
-                              formData.activityLevel === choice 
-                                ? "bg-brand-moss text-white" 
-                                : "bg-brand-cream border-brand-sand text-brand-moss"
-                            )}
-                          >
-                            {choice}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">Caffeine Intake</label>
-                      <div className="flex gap-2">
-                        {['None', 'Moderate', 'High'].map(choice => (
-                          <button
-                            key={choice}
-                            type="button"
-                            onClick={() => setFormData({...formData, caffeineIntake: choice as any})}
-                            aria-pressed={formData.caffeineIntake === choice}
-                            className={cn(
-                              "flex-1 py-2 rounded-xl border text-[9px] uppercase font-bold transition-all",
-                              formData.caffeineIntake === choice 
-                                ? "bg-brand-moss text-white" 
-                                : "bg-brand-cream border-brand-sand text-brand-moss"
-                            )}
-                          >
-                            {choice}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic text-brand-terracotta">Dietary Profile (Select Patterns)</label>
-                    <div className="flex flex-wrap gap-2">
-                      {DIETARY_OPTIONS.map(option => {
-                        const isSelected = formData.dietaryProfile.includes(option);
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => toggleDiet(option)}
-                            aria-pressed={isSelected}
-                            className={cn(
-                              "px-4 py-2 rounded-full border text-[10px] uppercase font-bold transition-all",
-                              isSelected 
-                                ? "bg-brand-moss text-white border-brand-moss" 
-                                : "bg-brand-cream border-brand-sand text-brand-moss hover:border-brand-moss"
-                            )}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic text-brand-terracotta">Cortisol & Stress (1-10)</label>
-                      <span className="text-xl font-serif italic text-brand-terracotta">{formData.stressLevel}</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="10" 
-                      value={formData.stressLevel}
-                      onChange={e => setFormData({...formData, stressLevel: parseInt(e.target.value)})}
-                      className="w-full accent-brand-terracotta bg-brand-sand h-1 rounded-lg appearance-none cursor-pointer"
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Morning Routine</label>
+                    <textarea
+                      value={formData.morningRoutine}
+                      onChange={e => setFormData({ ...formData, morningRoutine: e.target.value })}
+                      placeholder="Morning product order and notes."
+                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
                     />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Evening Routine</label>
+                    <textarea
+                      value={formData.eveningRoutine}
+                      onChange={e => setFormData({ ...formData, eveningRoutine: e.target.value })}
+                      placeholder="Evening product order and notes."
+                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Routine Duration</label>
+                      <input
+                        type="text"
+                        value={formData.routineDuration}
+                        onChange={e => setFormData({ ...formData, routineDuration: e.target.value })}
+                        placeholder="Months / Years"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">How often do you change products?</label>
+                      <input
+                        type="text"
+                        value={formData.productChangeFrequency}
+                        onChange={e => setFormData({ ...formData, productChangeFrequency: e.target.value })}
+                        placeholder="Every few weeks, rarely, seasonally..."
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Products that irritate</label>
+                      <input
+                        type="text"
+                        value={formData.productReactions}
+                        onChange={e => setFormData({ ...formData, productReactions: e.target.value })}
+                        placeholder="Describe your typical skin response."
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -489,84 +540,332 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
             {currentStep === 4 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-serif text-brand-slate italic">Your Intent</h2>
-                  <p className="text-brand-moss/80 font-light">Aligning our clinical goals for your skin intelligence journey.</p>
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Internal + Lifestyle Factors</h2>
+                  <p className="text-brand-moss/80 font-light">Map the internal rhythms and environmental influences that shape skin behavior.</p>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">The Investment Path</label>
-                    <div className="grid gap-2">
-                      {[
-                        { name: 'The Home Ritual', desc: 'A curated daily routine for independent care.' },
-                        { name: 'The Signature Hybrid Flow', desc: 'Balancing home care with periodic professional updates.' },
-                        { name: 'The Total Transformation', desc: 'Our most thorough protocol combining deep-dive clinical visits with rigorous home care.' }
-                      ].map(option => (
-                        <button
-                          key={option.name}
-                          type="button"
-                          onClick={() => setFormData({...formData, investmentPreference: option.name as any})}
-                          aria-pressed={formData.investmentPreference === option.name}
-                          className={cn(
-                            "w-full p-6 rounded-2xl border text-left transition-all flex justify-between items-center group",
-                            formData.investmentPreference === option.name 
-                              ? "bg-brand-slate text-white border-brand-slate shadow-lg" 
-                              : "bg-brand-cream border-brand-sand text-brand-moss hover:border-brand-slate"
-                          )}
-                        >
-                          <div className="space-y-1">
-                            <span className="font-serif italic text-lg leading-none">{option.name}</span>
-                            <p className={cn("text-[10px] font-light italic", formData.investmentPreference === option.name ? "text-brand-sand/80" : "text-brand-moss/60")}>
-                              {option.desc}
-                            </p>
-                          </div>
-                          <div className={cn(
-                            "w-5 h-5 rounded-full border flex items-center justify-center transition-all shrink-0",
-                            formData.investmentPreference === option.name ? "bg-brand-terracotta border-brand-terracotta" : "border-brand-sand"
-                          )}>
-                            {formData.investmentPreference === option.name && <Check size={12} className="text-white" />}
-                          </div>
-                        </button>
-                      ))}
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">Stress Level (1–10)</label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={formData.stressLevel}
+                        onChange={e => setFormData({ ...formData, stressLevel: parseInt(e.target.value) })}
+                        className="w-full accent-brand-terracotta bg-brand-sand h-1 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <span className="text-sm font-semibold text-brand-terracotta">{formData.stressLevel}</span>
                     </div>
                   </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-3">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">Average Sleep per Night</label>
+                      <div className="flex gap-2">
+                        {['Poor', 'Average', 'Excellent'].map(choice => (
+                          <button
+                            key={choice}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, sleepQuality: choice as any })}
+                            aria-pressed={formData.sleepQuality === choice}
+                            className={cn(
+                              'flex-1 py-2 rounded-xl border text-[10px] uppercase font-bold transition-all',
+                              formData.sleepQuality === choice
+                                ? 'bg-brand-moss text-white'
+                                : 'bg-brand-cream border-brand-sand text-brand-moss'
+                            )}
+                          >
+                            {choice}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss italic">Hydration</label>
+                      <div className="flex gap-2">
+                        {['Low', 'Standard', 'Optimal'].map(choice => (
+                          <button
+                            key={choice}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, waterIntake: choice as any })}
+                            aria-pressed={formData.waterIntake === choice}
+                            className={cn(
+                              'flex-1 py-2 rounded-xl border text-[10px] uppercase font-bold transition-all',
+                              formData.waterIntake === choice
+                                ? 'bg-brand-moss text-white'
+                                : 'bg-brand-cream border-brand-sand text-brand-moss'
+                            )}
+                          >
+                            {choice}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Supplements</label>
+                      <input
+                        type="text"
+                        value={formData.supplements}
+                        onChange={e => setFormData({ ...formData, supplements: e.target.value })}
+                        placeholder="Vitamins, probiotics, adaptogens, etc."
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Exercise Habits</label>
+                      <input
+                        type="text"
+                        value={formData.exerciseHabits}
+                        onChange={e => setFormData({ ...formData, exerciseHabits: e.target.value })}
+                        placeholder="Cardio, strength, frequency, intensity."
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Lifestyle / Environment</label>
+                      <textarea
+                        value={formData.lifestyleFactors}
+                        onChange={e => setFormData({ ...formData, lifestyleFactors: e.target.value })}
+                        placeholder="Travel, humidity, work environment, sleep routine, stressors."
+                        className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
+            {currentStep === 5 && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Hormonal + Health History</h2>
+                  <p className="text-brand-moss/80 font-light">Record key biological and systemic factors that may influence barrier and pigment behavior.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    { field: 'hormonalImbalance', label: 'Hormonal imbalance' },
+                    { field: 'pcos', label: 'PCOS' },
+                    { field: 'fibroids', label: 'Fibroids' },
+                    { field: 'thyroidImbalance', label: 'Thyroid imbalance' },
+                    { field: 'insulinResistance', label: 'Insulin resistance' },
+                    { field: 'eczemaPsoriasis', label: 'Eczema / Psoriasis' },
+                    { field: 'digestiveConcerns', label: 'Digestive concerns' }
+                  ].map((item) => {
+                    const key = item.field as 'hormonalImbalance' | 'pcos' | 'fibroids' | 'thyroidImbalance' | 'insulinResistance' | 'eczemaPsoriasis' | 'digestiveConcerns';
+                    return (
+                      <button
+                        key={item.field}
+                        type="button"
+                        onClick={() => toggleCondition(key)}
+                        className={cn(
+                          'w-full rounded-3xl border px-4 py-4 text-left text-sm font-bold transition-all',
+                          formData[key]
+                            ? 'bg-brand-moss text-white border-brand-moss'
+                            : 'bg-brand-cream border-brand-sand text-brand-slate hover:border-brand-moss'
+                        )}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="space-y-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">What is your primary intent for this partnership?</label>
-                    <textarea 
-                      value={formData.primaryIntent}
-                      onChange={e => setFormData({...formData, primaryIntent: e.target.value})}
-                      placeholder="e.g., Balancing hormonal sensitivity, establishing a rigorous clinical routine..."
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Current medications or supplements</label>
+                    <textarea
+                      value={formData.currentMedications}
+                      onChange={e => setFormData({ ...formData, currentMedications: e.target.value })}
+                      placeholder="List any prescription or over-the-counter protocols you are currently taking."
                       className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
                     />
                   </div>
+                </div>
+              </div>
+            )}
 
+            {currentStep === 6 && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Treatment History</h2>
+                  <p className="text-brand-moss/80 font-light">Document your prior corrective treatments and any reactions that followed.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {TREATMENT_OPTIONS.map((treatment) => {
+                    const isSelected = formData.treatmentHistory.includes(treatment);
+                    return (
+                      <button
+                        key={treatment}
+                        type="button"
+                        onClick={() => toggleTreatment(treatment)}
+                        className={cn(
+                          'w-full rounded-3xl border px-4 py-4 text-left text-sm font-bold transition-all',
+                          isSelected
+                            ? 'bg-brand-moss text-white border-brand-moss'
+                            : 'bg-brand-cream border-brand-sand text-brand-slate hover:border-brand-moss'
+                        )}
+                      >
+                        {treatment}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Previous reactions to treatments</label>
+                  <textarea
+                    value={formData.previousReactions}
+                    onChange={e => setFormData({ ...formData, previousReactions: e.target.value })}
+                    placeholder="Describe any sensitivity, inflammation, or other responses."
+                    className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                  />
+                </div>
+              </div>
+            )}
+
+            {currentStep === 7 && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Skin Intelligence Goals</h2>
+                  <p className="text-brand-moss/80 font-light">Define your healthy skin goals and how committed you are to corrective clinical care.</p>
+                </div>
+                <div className="space-y-6">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Previous Professional Treatments</label>
-                    <textarea 
-                      value={formData.professionalHistory}
-                      onChange={e => setFormData({...formData, professionalHistory: e.target.value})}
-                      placeholder="e.g., Chemical peels, Microneedling, IPL, regular facials..."
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">What would healthy skin look or feel like for you?</label>
+                    <textarea
+                      value={formData.primaryIntent}
+                      onChange={e => setFormData({ ...formData, primaryIntent: e.target.value })}
+                      placeholder="Describe your ideal outcome in your own words."
+                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Top 3 skin goals</label>
+                    <textarea
+                      value={formData.topGoals}
+                      onChange={e => setFormData({ ...formData, topGoals: e.target.value })}
+                      placeholder="1. 2. 3."
                       className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-20 resize-none text-sm"
                     />
                   </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Commitment level</label>
+                      <div className="grid gap-2">
+                        {['Ready', 'Curious', 'Committed'].map(choice => (
+                          <button
+                            key={choice}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, commitmentLevel: choice as any })}
+                            className={cn(
+                              'w-full rounded-2xl border px-4 py-3 text-left text-sm font-bold transition-all',
+                              formData.commitmentLevel === choice
+                                ? 'bg-brand-slate text-white border-brand-slate'
+                                : 'bg-brand-cream border-brand-sand text-brand-moss hover:border-brand-moss'
+                            )}
+                          >
+                            {choice}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Openness to corrective care</label>
+                      <div className="grid gap-2">
+                        {['Yes', 'Maybe', 'Prefer guidance'].map(choice => (
+                          <button
+                            key={choice}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, opennessToCorrectiveCare: choice as any })}
+                            className={cn(
+                              'w-full rounded-2xl border px-4 py-3 text-left text-sm font-bold transition-all',
+                              formData.opennessToCorrectiveCare === choice
+                                ? 'bg-brand-slate text-white border-brand-slate'
+                                : 'bg-brand-cream border-brand-sand text-brand-moss hover:border-brand-moss'
+                            )}
+                          >
+                            {choice}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
+            {currentStep === 8 && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Image Submission</h2>
+                  <p className="text-brand-moss/80 font-light">Provide visual context with natural-light images. No filters or makeup.</p>
+                </div>
+                <div className="space-y-5">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Current Product Protocol</label>
-                    <textarea 
-                      value={formData.currentRoutine}
-                      onChange={e => setFormData({...formData, currentRoutine: e.target.value})}
-                      placeholder="List your daily products..."
-                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-24 resize-none text-sm"
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Front-facing bare skin photo</label>
+                    <textarea
+                      value={formData.frontPhotoNotes}
+                      onChange={e => setFormData({ ...formData, frontPhotoNotes: e.target.value })}
+                      placeholder="When you upload, note the lighting and whether makeup was removed."
+                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-20 resize-none text-sm"
                     />
                   </div>
-
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Additional Goals or Notes</label>
-                    <textarea 
-                      value={formData.goals}
-                      onChange={e => setFormData({...formData, goals: e.target.value})}
-                      placeholder="Any other details for our diagnostic deep-dive?"
-                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-16 resize-none text-sm"
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Left side profile</label>
+                    <textarea
+                      value={formData.leftPhotoNotes}
+                      onChange={e => setFormData({ ...formData, leftPhotoNotes: e.target.value })}
+                      placeholder="Natural lighting preferred. Mention if any product residue remains."
+                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-20 resize-none text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Right side profile</label>
+                    <textarea
+                      value={formData.rightPhotoNotes}
+                      onChange={e => setFormData({ ...formData, rightPhotoNotes: e.target.value })}
+                      placeholder="Ideal for capturing texture, pigmentation, and barrier clarity."
+                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-20 resize-none text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 9 && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Professional Use Only</h2>
+                  <p className="text-brand-moss/80 font-light">This section is reserved for clinician review and will be completed after intake submission.</p>
+                </div>
+                <div className="grid gap-4">
+                  {[
+                    { field: 'professionalPrimaryConcerns', label: 'Primary Concerns' },
+                    { field: 'professionalSkinBehavior', label: 'Observed Skin Behavior' },
+                    { field: 'professionalBarrierStatus', label: 'Barrier Status' },
+                    { field: 'professionalInflammationLevel', label: 'Inflammation Level' },
+                    { field: 'professionalPigmentClassification', label: 'Pigment Classification' },
+                    { field: 'professionalTriggerPatterns', label: 'Possible Trigger Patterns' },
+                    { field: 'professionalRecommendedTreatmentPathway', label: 'Recommended Treatment Pathway' },
+                    { field: 'professionalRecommendedHomecare', label: 'Recommended Homecare' }
+                  ].map((item) => (
+                    <div key={item.field} className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">{item.label}</label>
+                      <textarea
+                        value={formData[item.field as keyof AssessmentData] as string || ''}
+                        onChange={e => setFormData({ ...formData, [item.field]: e.target.value })}
+                        placeholder={`Clinician note for ${item.label.toLowerCase()}.`}
+                        className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-20 resize-none text-sm"
+                      />
+                    </div>
+                  ))}
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Professional Notes</label>
+                    <textarea
+                      value={formData.professionalNotes || ''}
+                      onChange={e => setFormData({ ...formData, professionalNotes: e.target.value })}
+                      placeholder="Any additional clinician observations or treatment notes."
+                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-28 resize-none text-sm"
                     />
                   </div>
                 </div>
@@ -576,7 +875,7 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
 
           <div className="mt-8 pt-6 border-t border-brand-sand/30">
             <label className="text-[9px] uppercase tracking-widest font-bold text-brand-moss/40 mb-2 block">Step Experience (Optional Feedback)</label>
-            <textarea 
+            <textarea
               value={formData.stepFeedback?.[STEPS[currentStep].id] || ''}
               onChange={e => handleStepFeedback(e.target.value)}
               placeholder="Any difficulty or observations about this step?"
@@ -595,7 +894,6 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
           <ChevronLeft size={16} />
           Back
         </button>
-        
         {currentStep === STEPS.length - 1 ? (
           <button
             onClick={() => {
@@ -622,7 +920,7 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
       <div className="mt-8 text-center">
         <div className="inline-flex items-center gap-2 text-[9px] uppercase tracking-[0.2em] text-brand-sand">
           <Brain size={12} />
-          <span>Clinical Grade Assessment v1.0</span>
+          <span>Skin Intelligence Assessment™</span>
         </div>
       </div>
     </div>

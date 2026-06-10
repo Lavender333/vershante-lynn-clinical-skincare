@@ -13,6 +13,7 @@ import { cn } from '../lib/utils';
 import { generateClinicalInsights } from '../services/skinAnalysisService';
 
 import BiologicalFlowChart from '../components/BiologicalFlowChart';
+import PrintableSummary from '../components/PrintableSummary';
 
 type FlowStep = 'assessment' | 'booking' | 'success';
 
@@ -202,10 +203,27 @@ export default function AssessmentPage() {
               className="space-y-12"
             >
               <div className="max-w-2xl mx-auto text-center space-y-4">
-                <h1 className="text-5xl font-serif text-brand-slate italic">Skin Intelligence Assessment</h1>
-                <p className="text-brand-moss/80 font-light">
-                  This is step 01. Your responses allow me to prepare for our consultation with clinical precision and empathetic warmth.
-                </p>
+                <div className="text-sm uppercase tracking-widest text-brand-moss/60 font-black">We don't guess. We assess.</div>
+                <h1 className="text-5xl font-serif text-brand-slate italic">Skin Intelligence Assessment™</h1>
+                <p className="text-brand-moss/80 font-light">Comprehensive Skin Analysis & Corrective Strategy Intake.</p>
+
+                <div className="max-w-lg mx-auto text-brand-slate/70 text-base leading-relaxed">
+                  <p className="mb-3">The Skin Intelligence Assessment™ is a paid professional strategy consultation that maps skin behavior, trigger patterns, pigment dynamics, barrier status, and corrective pathways. The experience is clinical yet warm — intentional, elevated, and melanin-inclusive.</p>
+                  <p className="text-brand-terracotta font-bold uppercase tracking-[0.2em] text-[11px]">Skin Intelligence Assessment™ — $125<br />(Introduction Price: $90) • 45–60 minute session</p>
+                </div>
+
+                <div className="mt-4 text-sm text-brand-moss/70">
+                  <p className="font-bold mb-2">Assessment includes</p>
+                  <ul className="list-inside list-disc space-y-1 text-left max-w-md mx-auto">
+                    <li>Comprehensive intake + lifestyle review</li>
+                    <li>Trigger analysis & skin behavior evaluation</li>
+                    <li>Barrier, inflammation & pigment assessment</li>
+                    <li>Product review, treatment roadmap, customized homecare</li>
+                    <li>1:1 virtual or in-person consultation (45–60 minutes)</li>
+                    <li className="mt-2 text-[11px] text-brand-slate/60">If you move forward with corrective care within 7 days, receive a $25 credit toward your treatment plan.</li>
+                  </ul>
+                </div>
+                <div className="mt-2 text-xs italic text-brand-slate/50">"Your skin follows patterns. Your skin isn't misbehaving, it's communicating."</div>
               </div>
               
               <AssessmentForm onComplete={handleAssessmentComplete} />
@@ -216,19 +234,19 @@ export default function AssessmentPage() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-brand-terracotta">
                       <FlaskConical size={14} />
-                      <span className="font-bold text-[10px] uppercase">Data Analysis</span>
+                      <span className="font-bold text-[10px] uppercase">Clinical Review</span>
                     </div>
                     <p className="text-[11px] text-brand-moss font-light leading-relaxed">
-                      I thoroughly review your intelligence data to identify hidden patterns and triggers.
+                      Your intake is reviewed with clinical precision to map barrier status, pigment behavior, inflammation, and trigger patterns.
                     </p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-brand-terracotta">
                       <Calendar size={14} />
-                      <span className="font-bold text-[10px] uppercase">Immediate Booking</span>
+                      <span className="font-bold text-[10px] uppercase">Consultation Booking</span>
                     </div>
                     <p className="text-[11px] text-brand-moss font-light leading-relaxed">
-                      After the assessment, you will select a consultation window for our diagnostic deep-dive.
+                      Select a 45–60 minute window for the virtual or in-person strategy session that finalizes your treatment pathway.
                     </p>
                   </div>
                 </div>
@@ -251,7 +269,7 @@ export default function AssessmentPage() {
                 </div>
                 <h1 className="text-5xl font-serif text-brand-slate italic">Schedule Consultation</h1>
                 <p className="text-brand-moss/80 font-light">
-                  Step 02: Selecting a window for your diagnostic analysis. Choose a time that allows for focused dialogue.
+                  Step 02: Select the consultation window for your diagnostic deep dive. This session is designed to feel elevated, editorial, and clinically precise.
                 </p>
               </div>
 
@@ -279,7 +297,10 @@ export default function AssessmentPage() {
                 >
                   <h2 className="text-5xl font-serif text-brand-slate italic">Protocol established</h2>
                   <p className="text-xl text-brand-moss/80 font-light">
-                    Your assessment and consultation are now synchronized, {data?.fullName.split(' ')[0]}.
+                    Your assessment and consultation are now synchronized, {data?.fullName.split(' ')[0]}. Your strategy session is confirmed, and your intake is ready for the next clinical review.
+                  </p>
+                  <p className="text-sm text-brand-slate/60">
+                    If you choose to move forward with a corrective program within 7 days, you will receive a $25 credit toward your treatment plan or service.
                   </p>
                 </motion.div>
 
@@ -429,6 +450,13 @@ export default function AssessmentPage() {
                       </div>
                     </div>
                   </motion.div>
+                )}
+                
+                {/* Printable summary / receipt */}
+                {data && (
+                  <div className="mt-6 flex items-center justify-center">
+                    <PrintableSummary data={data} slot={selectedSlot} />
+                  </div>
                 )}
               </div>
               

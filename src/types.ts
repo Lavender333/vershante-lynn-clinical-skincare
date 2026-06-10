@@ -12,7 +12,14 @@ export interface OperatingHours {
 export interface AssessmentData {
   id?: string; // Document ID (assigned by Firestore after creation)
   fullName: string;
+  preferredName: string;
+  dob: string;
+  phoneNumber: string;
   email: string;
+  occupation: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  referralSource: string;
   age: string;
   concerns: string[];
   sensitivityLevel: 'Low' | 'Medium' | 'High';
@@ -24,9 +31,37 @@ export interface AssessmentData {
   activityLevel: 'Sedentary' | 'Moderate' | 'Active';
   caffeineIntake: 'None' | 'Moderate' | 'High';
   currentRoutine: string;
+  morningRoutine: string;
+  eveningRoutine: string;
+  routineDuration: string;
+  productChangeFrequency: string;
+  productReactions: string;
   professionalHistory: string;
-  goals: string;
-  investmentPreference: 'The Home Ritual' | 'The Signature Hybrid Flow' | 'The Total Transformation';
+  skinHistorySummary: string;
+  treatmentsTried: string;
+  temporaryHelp: string;
+  worsenedBy: string;
+  recurringCycles: string;
+  supplements: string;
+  exerciseHabits: string;
+  lifestyleFactors: string;
+  hormonalImbalance: boolean;
+  pcos: boolean;
+  fibroids: boolean;
+  thyroidImbalance: boolean;
+  insulinResistance: boolean;
+  eczemaPsoriasis: boolean;
+  digestiveConcerns: boolean;
+  currentMedications: string;
+  treatmentHistory: string[];
+  previousReactions: string;
+  desiredOutcome: string;
+  topGoals: string;
+  commitmentLevel: 'Ready' | 'Curious' | 'Committed' | '';
+  opennessToCorrectiveCare: 'Yes' | 'Maybe' | 'Prefer guidance' | '';
+  frontPhotoNotes: string;
+  leftPhotoNotes: string;
+  rightPhotoNotes: string;
   primaryIntent: string;
   clinicalFocus: string[]; // Cortisol & Stress, Postpartum, Menopause, Hyperpigmentation
   stepFeedback?: Record<string, string>;
@@ -38,6 +73,14 @@ export interface AssessmentData {
     recommendedProducts: string[];
     confidenceScore: number;
   };
+  professionalPrimaryConcerns?: string;
+  professionalSkinBehavior?: string;
+  professionalBarrierStatus?: string;
+  professionalInflammationLevel?: string;
+  professionalPigmentClassification?: string;
+  professionalTriggerPatterns?: string;
+  professionalRecommendedTreatmentPathway?: string;
+  professionalRecommendedHomecare?: string;
   professionalNotes?: string;
   consultationSlot?: {
     id?: string;
