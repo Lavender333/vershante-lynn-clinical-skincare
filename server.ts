@@ -117,16 +117,18 @@ async function startServer() {
         </html>
       `;
 
-      // Generate PDF from HTML if html-pdf-node is available
+      // Generate PDF from HTML using Puppeteer for higher-fidelity rendering
       let pdfBase64 = null;
       try {
-        const pdfLib = await import('html-pdf-node');
-        const file = { content: summaryHtml };
-        const options = { format: 'A4' };
-        const pdfBuffer = await pdfLib.generatePdf(file, options);
+        const puppeteer = await import('puppeteer');
+        const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+        const page = await browser.newPage();
+        await page.setContent(summaryHtml, { waitUntil: 'networkidle0' });
+        const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '12mm', left: '12mm', right: '12mm' } });
+        await browser.close();
         pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
       } catch (pdfErr) {
-        console.warn('PDF generation not available or failed:', pdfErr?.message || pdfErr);
+        console.warn('Puppeteer PDF generation failed or not available:', pdfErr?.message || pdfErr);
       }
 
       const emailPayload: any = {
