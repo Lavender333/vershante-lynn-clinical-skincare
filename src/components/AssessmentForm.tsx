@@ -41,16 +41,11 @@ const SECTION_SUMMARIES: Record<string, string[]> = {
     'How did you hear about Vershanté Lynn Aesthetics?'
   ],
   concerns: [
-    'Hyperpigmentation / dark marks',
-    'Uneven skin tone',
-    'Sensitivity or irritation',
-    'Redness or inflammation',
-    'Breakouts or congestion',
-    'Texture or roughness',
-    'Dryness or dehydration',
-    'Fine lines or visible aging',
-    'Loss of firmness or glow',
-    'Scarring'
+    'Acne',
+    'Pigment',
+    'Sensitivity',
+    'Aging',
+    'Overall health'
   ],
   history: [
     'Have you worked with a skincare professional before?',
@@ -120,16 +115,11 @@ const SECTION_SUMMARIES: Record<string, string[]> = {
 };
 
 const CONCERNS = [
-  { id: 'Hyperpigmentation / dark marks', desc: 'Visible melanin clusters, dark spots, or uneven tone.' },
-  { id: 'Uneven skin tone', desc: 'Areas of imbalance across texture and color.' },
-  { id: 'Sensitivity or irritation', desc: 'Reactive responses to products or environmental triggers.' },
-  { id: 'Redness or inflammation', desc: 'Vascular reactivity, flushing, or barrier distress.' },
-  { id: 'Breakouts or congestion', desc: 'Clogged pores, blemishes, and compromised renewal.' },
-  { id: 'Texture or roughness', desc: 'Surface irregularities and uneven hydration.' },
-  { id: 'Dryness or dehydration', desc: 'Lack of moisture, barrier fatigue, or tightness.' },
-  { id: 'Fine lines or visible aging', desc: 'Early textural change and concerns around firmness.' },
-  { id: 'Loss of firmness or glow', desc: 'Dullness, laxity, and diminished radiance.' },
-  { id: 'Scarring', desc: 'Post-inflammatory or procedural marks and relief concerns.' }
+  { id: 'Acne', desc: 'Active acne, breakouts, and follicular congestion.' },
+  { id: 'Pigment', desc: 'Hyperpigmentation, dark marks, and uneven melanin distribution.' },
+  { id: 'Sensitivity', desc: 'Reactive or easily irritated skin; barrier fragility.' },
+  { id: 'Aging', desc: 'Fine lines, loss of firmness, and texture changes.' },
+  { id: 'Overall health', desc: 'Skin concerns related to systemic health and lifestyle.' }
 ];
 
 const TREATMENT_OPTIONS = [

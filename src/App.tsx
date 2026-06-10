@@ -55,7 +55,6 @@ function Footer() {
         <div className="space-y-6">
           <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-slate">Clinical Focus</h4>
           <ul className="space-y-4 text-sm text-brand-moss/80 font-light">
-            <li>Cortisol & Stress</li>
             <li>Postpartum Skincare</li>
             <li>Menopause Intelligence</li>
             <li>Hyperpigmentation Patterns</li>

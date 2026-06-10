@@ -19,7 +19,7 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center gap-3 bg-brand-sand/50 px-4 py-2 rounded-full border border-brand-sand">
               <FlaskConical size={16} className="text-brand-moss" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-moss">Clinically Trained, Spiritually Warm</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-moss">Your skin isn’t misbehaving, it’s communicating.</span>
             </div>
             
             <h1 className="text-6xl md:text-8xl font-serif text-brand-slate leading-[0.9] italic">
@@ -78,16 +78,7 @@ export default function LandingPage() {
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-12">
-            <div className="space-y-6">
-              <div className="w-16 h-16 bg-brand-terracotta/20 rounded-2xl flex items-center justify-center border border-brand-terracotta/40">
-                <Zap className="text-brand-terracotta" />
-              </div>
-              <h3 className="text-3xl font-serif italic text-brand-sand">Cortisol & Stress</h3>
-              <p className="text-brand-sand/60 font-light leading-relaxed text-sm">
-                Managing inflammation triggered by high-cortisol lifestyle impacts on the epidermal barrier.
-              </p>
-            </div>
+            <div className="grid md:grid-cols-3 gap-12">
             
             <div className="space-y-6">
               <div className="w-16 h-16 bg-brand-moss/20 rounded-2xl flex items-center justify-center border border-brand-moss/40">
@@ -115,7 +106,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-3xl font-serif italic text-brand-sand">Patterns of Pigment</h3>
               <p className="text-brand-sand/60 font-light leading-relaxed text-sm">
-                Advanced correction for Hyperpigmentation Patterns and persistent melanin-rich marking.
+                Advanced correction for hyperpigmentation patterns and persistent melanin-rich marking.
               </p>
             </div>
           </div>

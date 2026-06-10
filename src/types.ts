@@ -60,7 +60,7 @@ export interface AssessmentData {
   leftPhotoNotes: string;
   rightPhotoNotes: string;
   primaryIntent: string;
-  clinicalFocus: string[]; // Cortisol & Stress, Postpartum, Menopause, Hyperpigmentation
+  clinicalFocus: string[]; // Postpartum, Menopause, Hyperpigmentation
   stepFeedback?: Record<string, string>;
   clinicalResponse?: string;
   meetingId?: string;
