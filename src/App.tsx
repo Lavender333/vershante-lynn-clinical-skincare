@@ -24,7 +24,7 @@ function Footer() {
             </div>
           </Link>
           <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
-            Clinically trained esthetician specializing in unique skin intelligence.
+            Clinical, intentional skincare strategy — modern, elevated, and melanin-inclusive.
           </p>
           <div className="flex gap-4">
             <a href="#" className="w-8 h-8 rounded-full bg-brand-moss/10 flex items-center justify-center text-brand-moss hover:bg-brand-moss hover:text-white transition-all">
@@ -72,21 +72,21 @@ function Footer() {
         </div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-6 pt-12 border-t border-brand-sand/50 flex flex-col md:flex-row justify-between items-center gap-6">
-        <span className="text-[10px] uppercase tracking-[0.2em] text-brand-sand font-bold">
-          &copy; {new Date().getFullYear()} Vershante Lynn Skincare. All Rights Intelligence.
-        </span>
-        <div className="flex gap-8 text-[9px] uppercase tracking-widest text-brand-sand font-bold">
-          <a href="#" className="hover:text-brand-moss transition-all">Privacy Protocol</a>
-          <a href="#" className="hover:text-brand-moss transition-all">Terms of Service</a>
-          <Link to="/my-intelligence" className="flex items-center gap-1 hover:text-brand-moss transition-all">
-            <Lock size={8} /> My Portal
-          </Link>
-          <Link to="/dashboard" className="flex items-center gap-1 hover:text-brand-moss transition-all">
-            <Lock size={8} /> Professional
-          </Link>
+        <div className="max-w-7xl mx-auto px-6 pt-12 border-t border-brand-sand/50 flex flex-col md:flex-row justify-between items-center gap-6">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-brand-sand font-bold">
+            © {new Date().getFullYear()} Vershanté Lynn Aesthetics. All rights reserved.
+          </span>
+          <div className="flex gap-8 text-[9px] uppercase tracking-widest text-brand-sand font-bold">
+            <a href="#" className="hover:text-brand-moss transition-all">Privacy Policy</a>
+            <a href="#" className="hover:text-brand-moss transition-all">Terms</a>
+            <Link to="/my-intelligence" className="flex items-center gap-1 hover:text-brand-moss transition-all">
+              <Lock size={8} /> My Portal
+            </Link>
+            <Link to="/dashboard" className="flex items-center gap-1 hover:text-brand-moss transition-all">
+              <Lock size={8} /> Professional
+            </Link>
+          </div>
         </div>
-      </div>
     </footer>
   );
 }
