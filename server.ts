@@ -82,13 +82,87 @@ async function startServer() {
       return res.status(200).json({ success: true, message: "Email not sent: RESEND_API_KEY missing" });
     }
 
-    const { email, fullName, bookingDetails, insightsSummary, clinicalFocus } = req.body;
+    const { email, fullName, bookingDetails, insightsSummary, clinicalFocus, summaryData } = req.body;
 
     try {
       const { Resend } = await import('resend');
       const resend = new Resend(RESEND_API_KEY);
 
-      const { data, error } = await resend.emails.send({
+      // Build a compact HTML summary for PDF generation
+      const summaryHtml = `
+        <html>
+        <head>
+          <meta name="viewport" content="width=device-width,initial-scale=1" />
+          <style>
+            body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial; color:#222; padding:24px}
+            h1{font-family: 'Cormorant Garamond', serif; font-size:24px; margin:0 0 6px}
+            p{margin:6px 0}
+            .muted{color:#666;font-size:13px}
+            .chip{display:inline-block;padding:6px 10px;border-radius:999px;background:#f3efe9;margin:4px;font-size:13px}
+          </style>
+        </head>
+        <body>
+          <h1>Skin Intelligence Assessment™ — Summary</h1>
+          <div class="muted">We don't guess. We assess. Your skin follows patterns.</div>
+          <div style="margin-top:12px">
+            <strong>Client:</strong> ${summaryData?.fullName || fullName} ${summaryData?.preferredName ? `(${summaryData.preferredName})` : ''}<br/>
+            <strong>Email:</strong> ${summaryData?.email || email} · <strong>Phone:</strong> ${summaryData?.phoneNumber || ''}
+          </div>
+          <div style="margin-top:10px"><strong>Consultation:</strong> ${bookingDetails.date} — ${bookingDetails.time} (${bookingDetails.type})</div>
+          <div style="margin-top:10px"><strong>Investment:</strong> $125 — Intro $90</div>
+          <div style="margin-top:14px"><strong>Concerns:</strong><div>${(summaryData?.concerns || clinicalFocus || []).map((c: string) => `<span class="chip">${c}</span>`).join('')}</div></div>
+          <div style="margin-top:14px"><strong>Preliminary Insight</strong><p style="font-style:italic">${insightsSummary?.analysis || ''}</p></div>
+          <div style="margin-top:14px;font-size:13px;color:#9b4d3a">If you move forward with corrective care within 7 days, receive a $25 credit toward your treatment plan.</div>
+        </body>
+        </html>
+      `;
+
+      // Generate PDF from HTML if html-pdf-node is available
+      let pdfBase64 = null;
+      try {
+        const pdfLib = await import('html-pdf-node');
+        const file = { content: summaryHtml };
+        const options = { format: 'A4' };
+        const pdfBuffer = await pdfLib.generatePdf(file, options);
+        pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
+      } catch (pdfErr) {
+        console.warn('PDF generation not available or failed:', pdfErr?.message || pdfErr);
+      }
+
+      const emailPayload: any = {
+        from: 'Vershante Lynn <onboarding@resend.dev>',
+        to: [email],
+        bcc: ['antoinetteqwilliams@gmail.com'],
+        subject: `Your Skin Intelligence Protocol: ${fullName}`,
+        html: `
+          <div style="font-family: 'Inter', sans-serif; color: #2C3E50; max-width: 600px; margin: 0 auto; background-color: #FDFCF9; padding: 40px; border: 1px solid #E8E2D9; border-radius: 20px;">
+            <h1 style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 32px; color: #4A5D4E; border-bottom: 2px solid #D3866E; padding-bottom: 10px;">Vershante Lynn Skin Intelligence</h1>
+            <p style="font-size: 16px; line-height: 1.6;">Hello ${fullName},</p>
+            <p style="font-size: 16px; line-height: 1.6;">Your skin diagnostic has been logged. We are preparing for our deep-dive into your biological flow and clinical patterns.</p>
+            <div style="background-color: #2C3E50; color: white; padding: 25px; border-radius: 15px; margin: 30px 0;">
+              <h2 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 20px; color: #D3866E;">Confirmed Consultation</h2>
+              <p style="font-size: 24px; font-family: 'Cormorant Garamond', serif; font-style: italic; margin: 5px 0;">${bookingDetails.date}</p>
+              <p style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7);">${bookingDetails.time} — ${bookingDetails.type} Session</p>
+            </div>
+            <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; color: #4A5D4E; margin-top: 30px;">Preliminary Clinical Insights</h3>
+            <p style="font-size: 14px; font-style: italic; color: #4A5D4E; padding-left: 15px; border-left: 2px solid #E8E2D9;">"${insightsSummary?.analysis || ''}"</p>
+            <div style="margin-top: 20px;"><p style="font-size: 10px; text-transform: uppercase; color: #D3866E;">Primary Focus Areas</p><p style="font-size: 12px; color: #2C3E50;">${clinicalFocus.join(', ')}</p></div>
+            <div style="margin-top: 40px; border-top: 1px solid #E8E2D9; pt: 20px; text-align: center;"><p style="font-size: 12px; color: #4A5D4E; opacity: 0.6;">Clinically Trained Esthetician | Skin Intelligence Assessments</p></div>
+          </div>
+        `
+      };
+
+      if (pdfBase64) {
+        emailPayload.attachments = [
+          {
+            filename: 'Skin-Intelligence-Summary.pdf',
+            data: pdfBase64,
+            type: 'application/pdf'
+          }
+        ];
+      }
+
+      const { data, error } = await resend.emails.send(emailPayload);
         from: 'Vershante Lynn <onboarding@resend.dev>',
         to: [email],
         bcc: ['antoinetteqwilliams@gmail.com'],

@@ -113,7 +113,8 @@ export default function AssessmentPage() {
                 type: slot.type
               },
               insightsSummary: data.clinicalInsights,
-              clinicalFocus: data.clinicalFocus
+              clinicalFocus: data.clinicalFocus,
+              summaryData: data
             })
           });
           const result = await response.json();
