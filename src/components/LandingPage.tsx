@@ -43,6 +43,16 @@ export default function LandingPage() {
                 </Link>
               </div>
             )}
+
+            <div className="flex flex-wrap gap-4 mt-4">
+              <Link
+                to="/assessment"
+                className="bg-brand-terracotta text-white px-8 py-4 rounded-full text-[13px] uppercase tracking-[0.12em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-lg"
+              >
+                Start your Free Skin Intellegence Screening
+                <Brain size={16} />
+              </Link>
+            </div>
           </motion.div>
           
           <motion.div
