@@ -204,31 +204,16 @@ export default function AssessmentPage() {
               className="space-y-12"
             >
               <div className="max-w-2xl mx-auto text-center space-y-4">
-                <div className="space-y-1">
-                  <div className="text-sm uppercase tracking-widest text-brand-moss/60 font-black">We don't guess. We assess.</div>
-                  <div className="text-sm uppercase tracking-widest text-brand-moss/60 font-black">Your skin follows patterns.</div>
-                  <div className="text-sm uppercase tracking-widest text-brand-moss/60 font-black">Your skin isn't misbehaving, it's communicating.</div>
-                </div>
                 <h1 className="text-5xl font-serif text-brand-slate italic">Skin Intelligence Assessment™</h1>
-                <p className="text-brand-moss/80 font-light">Comprehensive Skin Analysis & Corrective Strategy Intake.</p>
+                <p className="text-brand-moss/80 font-semibold">Comprehensive Skin Analysis & Corrective Strategy Intake</p>
 
-                <div className="max-w-lg mx-auto text-brand-slate/70 text-base leading-relaxed">
-                  <p className="mb-3">The Skin Intelligence Assessment™ is a paid professional strategy consultation that maps skin behavior, trigger patterns, pigment dynamics, barrier status, and corrective pathways. The experience is clinical yet warm — intentional, elevated, and melanin-inclusive.</p>
-                  <p className="text-brand-terracotta font-bold uppercase tracking-[0.2em] text-[11px]">Skin Intelligence Assessment™ — $125<br />(Introduction Price: $90) • 45–60 minute session</p>
+                <div className="max-w-3xl mx-auto text-brand-slate/70 text-base leading-relaxed text-left">
+                  <p className="mb-3 font-medium">Welcome to the Skin Intelligence Assessment™.</p>
+                  <p className="mb-2">This assessment is designed to help identify patterns influencing your skin health, behavior, sensitivity, and overall function.</p>
+                  <p className="mb-2">Rather than focusing only on surface symptoms, we take a more intentional look at factors that may be contributing to imbalance, inflammation, discoloration, congestion, dehydration, or changes within the skin over time.</p>
                 </div>
 
-                <div className="mt-4 text-sm text-brand-moss/70">
-                  <p className="font-bold mb-2">Assessment includes</p>
-                  <ul className="list-inside list-disc space-y-1 text-left max-w-md mx-auto">
-                    <li>Comprehensive intake + lifestyle review</li>
-                    <li>Trigger analysis & skin behavior evaluation</li>
-                    <li>Barrier, inflammation & pigment assessment</li>
-                    <li>Product review, treatment roadmap, customized homecare</li>
-                    <li>1:1 virtual or in-person consultation (45–60 minutes)</li>
-                    <li className="mt-2 text-[11px] text-brand-slate/60">If you move forward with corrective care within 7 days, receive a $25 credit toward your treatment plan.</li>
-                  </ul>
-                </div>
-                <div className="mt-2 text-xs italic text-brand-slate/50">"Your skin follows patterns. Your skin isn't misbehaving, it's communicating."</div>
+                <div className="max-w-lg mx-auto text-brand-terracotta font-bold uppercase tracking-[0.2em] text-[11px]">Skin Intelligence Assessment™ — $125<br />(Introduction Price: $90) • 45–60 minute session</div>
               </div>
               
               <AssessmentForm onComplete={handleAssessmentComplete} />

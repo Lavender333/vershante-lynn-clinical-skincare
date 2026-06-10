@@ -5,16 +5,16 @@ import { cn } from '../lib/utils';
 import { AssessmentData } from '../types';
 
 const STEPS = [
-  { id: 'clientInfo', title: 'Client Information' },
-  { id: 'concerns', title: 'Skin Concerns' },
-  { id: 'history', title: 'Skin History' },
-  { id: 'routine', title: 'Routine Review' },
-  { id: 'lifestyle', title: 'Lifestyle' },
-  { id: 'hormonal', title: 'Health History' },
-  { id: 'treatment', title: 'Treatment History' },
-  { id: 'goals', title: 'Skin Goals' },
-  { id: 'images', title: 'Image Submission' },
-  { id: 'professional', title: 'Professional Use' }
+  { id: 'clientInfo', title: 'SECTION 1 — CLIENT INFORMATION' },
+  { id: 'concerns', title: 'SECTION 2 — YOUR SKIN CONCERNS' },
+  { id: 'history', title: 'SECTION 3 — SKIN HISTORY & PATTERNS' },
+  { id: 'routine', title: 'SECTION 4 — PRODUCT & ROUTINE REVIEW' },
+  { id: 'lifestyle', title: 'SECTION 5 — INTERNAL + LIFESTYLE FACTORS' },
+  { id: 'hormonal', title: 'SECTION 6 — HORMONAL + HEALTH HISTORY' },
+  { id: 'treatment', title: 'SECTION 7 — TREATMENT HISTORY' },
+  { id: 'goals', title: 'SECTION 8 — SKIN INTELLIGENCE GOALS' },
+  { id: 'images', title: 'SECTION 9 — IMAGE SUBMISSION' },
+  { id: 'professional', title: 'SECTION 10 — PROFESSIONAL USE ONLY' }
 ];
 
 const STEP_MICROCOPY: Record<string, string> = {
@@ -28,6 +28,96 @@ const STEP_MICROCOPY: Record<string, string> = {
   goals: 'Define outcomes clearly — clinical progress is strategic and measurable.',
   images: 'Natural light, no filters — visual documentation supports accurate analysis.',
   professional: 'Reserved for clinician synthesis and recommended clinical pathway.'
+};
+
+const SECTION_SUMMARIES: Record<string, string[]> = {
+  clientInfo: [
+    'Full Name',
+    'Preferred Name',
+    'Date of Birth',
+    'Phone Number',
+    'Email Address',
+    'Occupation',
+    'Emergency Contact Name + Phone Number',
+    'How did you hear about Vershanté Lynn Aesthetics?'
+  ],
+  concerns: [
+    'Hyperpigmentation / dark marks',
+    'Uneven skin tone',
+    'Sensitivity or irritation',
+    'Redness or inflammation',
+    'Breakouts or congestion',
+    'Texture or roughness',
+    'Dryness or dehydration',
+    'Fine lines or visible aging',
+    'Loss of firmness or glow',
+    'Scarring'
+  ],
+  history: [
+    'Have you worked with a skincare professional before?',
+    'What treatments or products have you tried previously?',
+    'Did anything help temporarily?',
+    'Did anything make your skin worse?',
+    'Describe any recurring cycles or changes you notice with your skin.'
+  ],
+  routine: [
+    'Morning Routine',
+    'Evening Routine',
+    'How long have you been using your current routine?',
+    'How often do you change products?',
+    'Do products commonly burn, sting, or cause irritation?'
+  ],
+  lifestyle: [
+    'Stress levels',
+    'Average sleep per night',
+    'Water intake',
+    'Supplements',
+    'Exercise habits',
+    'Lifestyle/environment factors'
+  ],
+  hormonal: [
+    'Hormonal imbalance',
+    'PCOS',
+    'Fibroids',
+    'Thyroid imbalance',
+    'Insulin resistance',
+    'Eczema/Psoriasis',
+    'Digestive concerns',
+    'Current medications'
+  ],
+  treatment: [
+    'Chemical peels',
+    'Microneedling',
+    'Laser treatments',
+    'Dermaplaning',
+    'LED therapy',
+    'Prescription skincare',
+    'Previous reactions to treatments'
+  ],
+  goals: [
+    'What would healthy skin look or feel like for you?',
+    'Top 3 skin goals',
+    'Commitment level',
+    'Openness to corrective care'
+  ],
+  images: [
+    'Front-facing bare skin photo',
+    'Left side profile',
+    'Right side profile',
+    'Natural lighting preferred',
+    'No filters or makeup'
+  ],
+  professional: [
+    'Primary Concerns',
+    'Observed Skin Behavior',
+    'Barrier Status',
+    'Inflammation Level',
+    'Pigment Classification',
+    'Possible Trigger Patterns',
+    'Recommended Treatment Pathway',
+    'Recommended Homecare',
+    'Professional Notes'
+  ]
 };
 
 const CONCERNS = [
@@ -267,6 +357,17 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
           <div className="flex-grow">
             <p className="text-[11px] italic text-brand-slate/60 mb-2">We don't guess. We assess. Your skin follows patterns.</p>
             <p className="text-sm text-brand-moss/60 mb-6">{STEP_MICROCOPY[STEPS[currentStep].id]}</p>
+
+            {SECTION_SUMMARIES[STEPS[currentStep].id] && (
+              <div className="mb-6 bg-brand-cream/50 p-4 rounded-xl border border-brand-sand text-sm text-brand-slate">
+                <p className="uppercase tracking-widest text-[10px] font-bold text-brand-moss mb-2">This section covers</p>
+                <ul className="list-disc list-inside space-y-1">
+                  {SECTION_SUMMARIES[STEPS[currentStep].id].map((item) => (
+                    <li key={item} className="text-[13px]">{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {currentStep === 0 && (
               <div className="space-y-6">
                 <div className="space-y-2">
