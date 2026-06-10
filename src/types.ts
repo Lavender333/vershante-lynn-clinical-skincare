@@ -16,9 +16,6 @@ export interface AssessmentData {
   dob: string;
   phoneNumber: string;
   email: string;
-  occupation: string;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
   referralSource: string;
   age: string;
   concerns: string[];

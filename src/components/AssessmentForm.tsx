@@ -37,8 +37,7 @@ const SECTION_SUMMARIES: Record<string, string[]> = {
     'Date of Birth',
     'Phone Number',
     'Email Address',
-    'Occupation',
-    'Emergency Contact Name + Phone Number',
+    
     'How did you hear about Vershanté Lynn Aesthetics?'
   ],
   concerns: [
@@ -152,9 +151,7 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
     dob: '',
     phoneNumber: '',
     email: '',
-    occupation: '',
-    emergencyContactName: '',
-    emergencyContactPhone: '',
+    
     referralSource: '',
     age: '',
     concerns: [],
@@ -418,50 +415,17 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
                       />
                     </div>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Email Address</label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="you@domain.com"
-                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Occupation</label>
-                      <input
-                        type="text"
-                        value={formData.occupation}
-                        onChange={e => setFormData({ ...formData, occupation: e.target.value })}
-                        placeholder="Creative Director"
-                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
-                      />
-                    </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Email Address</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={e => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="you@domain.com"
+                      className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                    />
                   </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Emergency Contact Name</label>
-                      <input
-                        type="text"
-                        value={formData.emergencyContactName}
-                        onChange={e => setFormData({ ...formData, emergencyContactName: e.target.value })}
-                        placeholder="Monique Brooks"
-                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Emergency Contact Phone</label>
-                      <input
-                        type="tel"
-                        value={formData.emergencyContactPhone}
-                        onChange={e => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
-                        placeholder="(555) 987-6543"
-                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
-                      />
-                    </div>
-                  </div>
+                  {/* Emergency contact removed as requested */}
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">How did you hear about Vershanté Lynn Aesthetics?</label>
                     <input
