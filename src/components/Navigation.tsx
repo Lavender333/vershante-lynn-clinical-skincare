@@ -48,7 +48,11 @@ export default function Navigation() {
           <div className="flex flex-col -gap-1">
             <span className="font-serif italic text-xl text-brand-slate leading-none">Vershante Lynn</span>
             <span className="text-[10px] uppercase tracking-[0.3em] text-brand-moss font-bold">Skin Intelligence</span>
-            <span className="text-[10px] italic text-brand-slate/60 mt-1">We don't guess. We assess.</span>
+            <div className="mt-2 space-y-0.5">
+              <span className="text-[10px] italic text-brand-slate/60 block">We don't guess. We assess.</span>
+              <span className="text-[10px] italic text-brand-slate/60 block">Your skin follows patterns.</span>
+              <span className="text-[10px] italic text-brand-slate/60 block">Your skin isn't misbehaving, it's communicating.</span>
+            </div>
           </div>
         </Link>
         

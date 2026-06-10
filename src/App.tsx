@@ -23,9 +23,14 @@ function Footer() {
               <span className="text-[10px] uppercase tracking-[0.3em] text-brand-moss font-bold">Skin Intelligence</span>
             </div>
           </Link>
-          <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
-            Clinical, intentional skincare strategy — modern, elevated, and melanin-inclusive.
-          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-brand-moss/70 font-light leading-relaxed">Clinical, intentional skincare strategy — modern, elevated, and melanin-inclusive.</p>
+            <div className="text-[11px] italic text-brand-slate/60">
+              <div>We don't guess. We assess.</div>
+              <div>Your skin follows patterns.</div>
+              <div>Your skin isn't misbehaving, it's communicating.</div>
+            </div>
+          </div>
           <div className="flex gap-4">
             <a href="#" className="w-8 h-8 rounded-full bg-brand-moss/10 flex items-center justify-center text-brand-moss hover:bg-brand-moss hover:text-white transition-all">
               <Instagram size={14} />

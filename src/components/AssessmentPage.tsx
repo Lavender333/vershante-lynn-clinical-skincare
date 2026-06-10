@@ -204,7 +204,11 @@ export default function AssessmentPage() {
               className="space-y-12"
             >
               <div className="max-w-2xl mx-auto text-center space-y-4">
-                <div className="text-sm uppercase tracking-widest text-brand-moss/60 font-black">We don't guess. We assess.</div>
+                <div className="space-y-1">
+                  <div className="text-sm uppercase tracking-widest text-brand-moss/60 font-black">We don't guess. We assess.</div>
+                  <div className="text-sm uppercase tracking-widest text-brand-moss/60 font-black">Your skin follows patterns.</div>
+                  <div className="text-sm uppercase tracking-widest text-brand-moss/60 font-black">Your skin isn't misbehaving, it's communicating.</div>
+                </div>
                 <h1 className="text-5xl font-serif text-brand-slate italic">Skin Intelligence Assessment™</h1>
                 <p className="text-brand-moss/80 font-light">Comprehensive Skin Analysis & Corrective Strategy Intake.</p>
 
