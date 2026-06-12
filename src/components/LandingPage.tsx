@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { Sparkles, Brain, FlaskConical, Quote, ArrowRight, ShieldCheck, Zap, Heart } from 'lucide-react';
 
 export default function LandingPage() {
-  const isAdmin = import.meta.env.VITE_IS_ADMIN === 'true';
   return (
     <div className="pt-20">
       {/* Hero Section */}
@@ -20,7 +19,7 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center gap-3 bg-brand-sand/50 px-4 py-2 rounded-full border border-brand-sand">
               <FlaskConical size={16} className="text-brand-moss" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-moss">Your skin isn’t misbehaving, it’s communicating.</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-moss">Your skin isn't misbehaving, it's communicating.</span>
             </div>
             
             <h1 className="text-6xl md:text-8xl font-serif text-brand-slate leading-[0.9] italic">
@@ -32,24 +31,22 @@ export default function LandingPage() {
               Expert clinical skincare for those navigating hormonal shifts, cortisol stress, and profound sensitivity.
             </p>
             
-            {isAdmin && (
-              <div className="flex flex-wrap gap-4">
-                <Link 
-                  to="/assessment"
-                  className="bg-brand-moss text-white px-10 py-5 rounded-full text-[12px] uppercase tracking-[0.2em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-moss/30"
-                >
-                  Start Assessment
-                  <Brain size={18} />
-                </Link>
-              </div>
-            )}
+            <div className="flex flex-wrap gap-4">
+              <Link 
+                to="/assessment"
+                className="bg-brand-moss text-white px-10 py-5 rounded-full text-[12px] uppercase tracking-[0.2em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-moss/30"
+              >
+                Start Assessment
+                <Brain size={18} />
+              </Link>
+            </div>
 
-            <div className="flex flex-wrap gap-4 mt-4">
+            <div className="flex flex-wrap gap-4">
               <Link
                 to="/assessment"
-                className="bg-brand-terracotta text-white px-8 py-4 rounded-full text-[13px] uppercase tracking-[0.12em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-lg"
+                className="bg-brand-terracotta text-white px-8 py-4 rounded-full text-[13px] uppercase tracking-[0.12em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-terracotta/30"
               >
-                Start your Free Skin Intellegence Screening
+                Start your Free Skin Intelligence Screening
                 <Brain size={16} />
               </Link>
             </div>
@@ -138,12 +135,12 @@ export default function LandingPage() {
           <div className="order-2 md:order-1 relative">
               <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4">
-                <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71af?auto=format&fit=crop&q=80&w=400" alt="Melanin Intelligence" className="rounded-3xl shadow-lg border border-brand-sand/50 contrast-[1.1]" referrerPolicy="no-referrer" />
+                <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71af?auto=format&fit=crop&q=80&w=400" alt="Melanin Intelligence" className="rounded-3xl shadow-lg border border-brand-sand/20" />
                 <div className="bg-brand-sand h-32 rounded-3xl eclectic-print" />
               </div>
               <div className="pt-12 space-y-4">
                 <div className="bg-brand-moss/10 h-32 rounded-3xl" />
-                <img src="https://images.unsplash.com/photo-1523450031158-4af9859f13dd?auto=format&fit=crop&q=80&w=400" alt="Diverse Clinical Focus" className="rounded-3xl shadow-lg border border-brand-sand/50 saturate-[0.8]" referrerPolicy="no-referrer" />
+                <img src="https://images.unsplash.com/photo-1523450031158-4af9859f13dd?auto=format&fit=crop&q=80&w=400" alt="Diverse Clinical Focus" className="rounded-3xl shadow-lg border border-brand-sand/20" />
               </div>
             </div>
           </div>
@@ -185,15 +182,13 @@ export default function LandingPage() {
               </div>
             </div>
             
-            {isAdmin && (
-              <Link 
-                to="/assessment"
-                className="inline-flex items-center gap-3 text-brand-terracotta border-b-2 border-brand-terracotta pb-1 font-bold uppercase tracking-widest hover:gap-6 transition-all"
-              >
-                Begin Your 01
-                <ArrowRight size={20} />
-              </Link>
-            )}
+            <Link 
+              to="/assessment"
+              className="inline-flex items-center gap-3 text-brand-terracotta border-b-2 border-brand-terracotta pb-1 font-bold uppercase tracking-widest hover:gap-6 transition-all"
+            >
+              Begin Your 01
+              <ArrowRight size={20} />
+            </Link>
           </div>
         </div>
       </motion.section>
@@ -211,14 +206,12 @@ export default function LandingPage() {
           <p className="text-lg text-brand-cream/60 font-light">
             We prioritize education and long-term health over "one and done" fixes. Start your journey with our clinical assessment.
           </p>
-          {isAdmin && (
-            <Link 
-              to="/assessment"
-              className="inline-block bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-2xl"
-            >
-              Access Assessment Form
-            </Link>
-          )}
+          <Link 
+            to="/assessment"
+            className="inline-block bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-2xl"
+          >
+            Access Assessment Form
+          </Link>
         </div>
       </motion.section>
     </div>
