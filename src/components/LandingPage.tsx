@@ -33,21 +33,18 @@ export default function LandingPage() {
             
             <div className="flex flex-wrap gap-4">
               <Link 
-                to="/assessment"
+                to="/screening"
                 className="bg-brand-moss text-white px-10 py-5 rounded-full text-[12px] uppercase tracking-[0.2em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-moss/30"
               >
-                Start Assessment
+                Start Free Screening
                 <Brain size={18} />
               </Link>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
               <Link
                 to="/assessment"
                 className="bg-brand-terracotta text-white px-8 py-4 rounded-full text-[13px] uppercase tracking-[0.12em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-terracotta/30"
               >
-                Start your Free Skin Intelligence Screening
-                <Brain size={16} />
+                Schedule Assessment
+                <ArrowRight size={16} />
               </Link>
             </div>
           </motion.div>
@@ -152,8 +149,8 @@ export default function LandingPage() {
               <div className="flex gap-6">
                 <span className="text-5xl font-black text-brand-sand/50">01</span>
                 <div>
-                  <h4 className="text-xl font-bold uppercase tracking-widest text-brand-slate mb-2">Digital Assessment</h4>
-                  <p className="text-brand-moss/80 font-light">The first step to scheduling. We collect detailed intelligence on your patterns.</p>
+                  <h4 className="text-xl font-bold uppercase tracking-widest text-brand-slate mb-2">Digital Screening</h4>
+                  <p className="text-brand-moss/80 font-light">Free assessment to identify your skin patterns and concerns.</p>
                 </div>
               </div>
               
@@ -183,10 +180,10 @@ export default function LandingPage() {
             </div>
             
             <Link 
-              to="/assessment"
+              to="/screening"
               className="inline-flex items-center gap-3 text-brand-terracotta border-b-2 border-brand-terracotta pb-1 font-bold uppercase tracking-widest hover:gap-6 transition-all"
             >
-              Begin Your 01
+              Start Your Screening
               <ArrowRight size={20} />
             </Link>
           </div>
@@ -204,14 +201,22 @@ export default function LandingPage() {
         <div className="max-w-3xl px-6 space-y-8">
           <h2 className="text-5xl font-serif text-brand-cream italic">Ready for Skin Intelligence?</h2>
           <p className="text-lg text-brand-cream/60 font-light">
-            We prioritize education and long-term health over "one and done" fixes. Start your journey with our clinical assessment.
+            We prioritize education and long-term health over "one and done" fixes. Start with our free screening to understand your skin patterns.
           </p>
-          <Link 
-            to="/assessment"
-            className="inline-block bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-2xl"
-          >
-            Access Assessment Form
-          </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link 
+              to="/screening"
+              className="inline-block bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-2xl"
+            >
+              Begin Free Screening
+            </Link>
+            <Link 
+              to="/assessment"
+              className="inline-block border-2 border-brand-cream text-brand-cream px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-white/10 transition-all"
+            >
+              Learn About Assessment
+            </Link>
+          </div>
         </div>
       </motion.section>
     </div>
