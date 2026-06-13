@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Navigation from './components/Navigation';
 import LandingPage from './components/LandingPage';
+import SkinIntelligenceScreening from './components/SkinIntelligenceScreening';
 import AssessmentPage from './components/AssessmentPage';
 import PhilosophyPage from './components/PhilosophyPage';
 import ContactPage from './components/ContactPage';
@@ -45,6 +46,7 @@ function Footer() {
           <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-slate">Navigation</h4>
           <ul className="space-y-4 text-sm text-brand-moss/80 font-light">
             <li><Link to="/" className="hover:text-brand-terracotta transition-colors">The Edge</Link></li>
+            <li><Link to="/screening" className="hover:text-brand-terracotta transition-colors">Free Screening</Link></li>
             <li><Link to="/assessment" className="hover:text-brand-terracotta transition-colors">Assessment Form</Link></li>
             <li><Link to="/philosophy" className="hover:text-brand-terracotta transition-colors">Philosophy</Link></li>
             <li><Link to="/contact" className="hover:text-brand-terracotta transition-colors">Contact Us</Link></li>
@@ -106,6 +108,7 @@ export default function App() {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/screening" element={<SkinIntelligenceScreening />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/philosophy" element={<PhilosophyPage />} />
             <Route path="/contact" element={<ContactPage />} />
