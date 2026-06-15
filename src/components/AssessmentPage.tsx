@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import AssessmentForm from '../components/AssessmentForm';
 import BookingCalendar from '../components/BookingCalendar';
@@ -18,7 +18,9 @@ import PrintableSummary from '../components/PrintableSummary';
 type FlowStep = 'assessment' | 'booking' | 'success';
 
 export default function AssessmentPage() {
-  const [flowStep, setFlowStep] = useState<FlowStep>('assessment');
+  const [searchParams] = useSearchParams();
+  const startsWithBooking = searchParams.get('step') === 'booking';
+  const [flowStep, setFlowStep] = useState<FlowStep>(startsWithBooking ? 'booking' : 'assessment');
   const [loading, setLoading] = useState(false);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [data, setData] = useState<AssessmentData | null>(null);
@@ -50,6 +52,12 @@ export default function AssessmentPage() {
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (startsWithBooking && flowStep === 'assessment') {
+      setFlowStep('booking');
+    }
+  }, [startsWithBooking, flowStep]);
 
   const handleAssessmentComplete = async (assessmentData: AssessmentData) => {
     setLoading(true);
@@ -88,13 +96,26 @@ export default function AssessmentPage() {
   };
 
   const handleBookingComplete = async (slot: ConsultationSlot) => {
-    if (!assessmentId) return;
     setLoading(true);
     try {
-      await updateDoc(doc(db, 'assessments', assessmentId), {
-        consultationSlot: slot,
-        status: 'scheduled'
-      });
+      if (assessmentId) {
+        await updateDoc(doc(db, 'assessments', assessmentId), {
+          consultationSlot: slot,
+          status: 'scheduled'
+        });
+      } else {
+        const docRef = await addDoc(collection(db, 'assessments'), {
+          fullName: 'Direct Calendar Booking',
+          email: user?.email || '',
+          phoneNumber: '',
+          consultationSlot: slot,
+          userId: user?.uid || null,
+          createdAt: serverTimestamp(),
+          source: 'direct-calendar-booking',
+          status: 'scheduled'
+        });
+        setAssessmentId(docRef.id);
+      }
       setSelectedSlot(slot);
       setFlowStep('success');
 
@@ -259,7 +280,7 @@ export default function AssessmentPage() {
                 </div>
                 <h1 className="text-5xl font-serif text-brand-slate italic">Schedule Consultation</h1>
                 <p className="text-brand-moss/80 font-light">
-                  Step 02: Select the consultation window for your diagnostic deep dive. This session is designed to feel elevated, editorial, and clinically precise.
+                  Select the consultation window for your Skin Intelligence Assessment. Availability is synchronized with the connected clinical calendar.
                 </p>
               </div>
 
@@ -287,7 +308,9 @@ export default function AssessmentPage() {
                 >
                   <h2 className="text-5xl font-serif text-brand-slate italic">Protocol established</h2>
                   <p className="text-xl text-brand-moss/80 font-light">
-                    Your assessment and consultation are now synchronized, {data?.fullName.split(' ')[0]}. Your strategy session is confirmed, and your intake is ready for the next clinical review.
+                    {data
+                      ? `Your assessment and consultation are now synchronized, ${data.fullName.split(' ')[0]}. Your strategy session is confirmed, and your intake is ready for the next clinical review.`
+                      : 'Your assessment consultation is confirmed. Complete your intake before the session so your clinical review is ready.'}
                   </p>
                   <p className="text-sm text-brand-slate/60">
                     If you choose to move forward with a corrective program within 7 days, you will receive a $25 credit toward your treatment plan or service.
@@ -350,7 +373,7 @@ export default function AssessmentPage() {
                           </div>
                           <div className="pt-4 border-t border-white/10 mt-4">
                             <p className="text-[9px] uppercase tracking-widest text-brand-sand opacity-40 mb-1">Clinical Investment</p>
-                            <p className="text-xs font-bold text-brand-terracotta">{data?.investmentPreference}</p>
+                            <p className="text-xs font-bold text-brand-terracotta">{data?.investmentPreference || 'Skin Intelligence Assessment'}</p>
                           </div>
                         </div>
                       </motion.div>
@@ -469,9 +492,15 @@ export default function AssessmentPage() {
               )}
 
               <div className="pt-8 space-y-6 border-t border-brand-sand">
-                <p className="text-sm text-brand-moss/60">
-                  A clinical prep guide and meeting link have been sent to <span className="font-bold underline">{data?.email}</span>.
-                </p>
+                {data?.email ? (
+                  <p className="text-sm text-brand-moss/60">
+                    A clinical prep guide and meeting link have been sent to <span className="font-bold underline">{data.email}</span>.
+                  </p>
+                ) : (
+                  <p className="text-sm text-brand-moss/60">
+                    Please complete the assessment intake before your appointment so the clinical prep can be matched to your skin history.
+                  </p>
+                )}
                 
                 {!user ? (
                   <div className="bg-brand-sand/10 p-8 rounded-3xl border border-brand-sand space-y-4">

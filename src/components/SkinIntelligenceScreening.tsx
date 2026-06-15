@@ -431,6 +431,13 @@ export default function SkinIntelligenceScreening() {
                 Hello {answers.firstName}, your responses suggest patterns in how your skin may be
                 functioning, responding, and adapting over time.
               </p>
+              <Link
+                to="/assessment?step=booking"
+                className="inline-flex items-center gap-3 bg-brand-terracotta text-white px-10 py-4 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-xl"
+              >
+                Schedule Assessment
+                <ArrowRight size={18} />
+              </Link>
             </div>
 
             {/* Education Section */}
@@ -504,15 +511,19 @@ export default function SkinIntelligenceScreening() {
                 </div>
               </div>
 
-              <motion.a
-                href="/assessment"
+              <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center gap-3 bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-xl"
+                className="inline-flex"
               >
-                Schedule Assessment
-                <ArrowRight size={20} />
-              </motion.a>
+                <Link
+                  to="/assessment?step=booking"
+                  className="inline-flex items-center gap-3 bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-xl"
+                >
+                  Schedule Assessment
+                  <ArrowRight size={20} />
+                </Link>
+              </motion.div>
             </div>
 
             {/* Close */}

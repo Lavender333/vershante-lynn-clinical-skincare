@@ -40,7 +40,7 @@ export default function LandingPage() {
                 <Brain size={18} />
               </Link>
               <Link
-                to="/assessment"
+                to="/assessment?step=booking"
                 className="bg-brand-terracotta text-white px-8 py-4 rounded-full text-[13px] uppercase tracking-[0.12em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-terracotta/30"
               >
                 Schedule Assessment
