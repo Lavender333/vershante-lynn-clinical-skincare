@@ -16,6 +16,7 @@ import BiologicalFlowChart from '../components/BiologicalFlowChart';
 import PrintableSummary from '../components/PrintableSummary';
 
 type FlowStep = 'assessment' | 'booking' | 'success';
+const CONFIRMATION_API_URL = import.meta.env.VITE_CONFIRMATION_API_URL || '';
 
 export default function AssessmentPage() {
   const [searchParams] = useSearchParams();
@@ -129,10 +130,10 @@ export default function AssessmentPage() {
       setSelectedSlot(slot);
       setFlowStep('success');
 
-      // Trigger confirmation email
-      if (data) {
+      // Trigger confirmation email only when a hosted API endpoint is configured.
+      if (data && CONFIRMATION_API_URL) {
         try {
-          const response = await fetch('/api/send-confirmation', {
+          const response = await fetch(CONFIRMATION_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -151,19 +152,19 @@ export default function AssessmentPage() {
           const result = await response.json();
           if (!result.success) {
             console.error("Clinical notification failed:", result.error);
-            toast.error("Communication sync delayed", {
-              description: "The confirmation email is being re-routed at the gateway."
+            toast.info("Consultation Confirmed", {
+              description: "Your appointment is saved. Email confirmation can be sent separately if needed."
             });
           } else {
             console.log("Clinical confirmation protocol dispatched successfully.");
-            toast.success("Intelligence Protocol Dispatched", {
+            toast.success("Consultation Confirmed", {
               description: `Confirmation sent to ${data.email}.`
             });
           }
         } catch (emailErr) {
-          console.error("Communication failure at gateway:", emailErr);
-          toast.error("Gateway Sync Failure", {
-            description: "Unable to reach the communication protocol."
+          console.info("Confirmation email skipped after booking save.", emailErr);
+          toast.info("Consultation Confirmed", {
+            description: "Your appointment is saved. Email confirmation can be sent separately if needed."
           });
         }
       }
