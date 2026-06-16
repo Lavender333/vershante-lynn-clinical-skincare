@@ -245,6 +245,32 @@ export default function AssessmentPage() {
                 </div>
 
                 <div className="max-w-lg mx-auto text-brand-terracotta font-bold uppercase tracking-[0.2em] text-[11px]">Skin Intelligence Assessment™ — $125<br />(Introduction Price: $90) • 45–60 minute session</div>
+
+                <div className="bg-white/70 border border-brand-sand rounded-[2rem] p-6 text-left shadow-sm">
+                  <h2 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-moss mb-4">Assessment Includes</h2>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {[
+                      'Comprehensive intake + lifestyle review',
+                      'Trigger analysis',
+                      'Skin behavior evaluation',
+                      'Barrier + inflammation assessment',
+                      'Pigment pattern analysis',
+                      'Product review',
+                      'Treatment roadmap',
+                      'Customized homecare recommendations',
+                      '1:1 virtual or in-person consultation',
+                      '45-60 minute session'
+                    ].map((item) => (
+                      <div key={item} className="flex items-start gap-2 text-xs text-brand-moss/80">
+                        <CheckCircle2 size={13} className="text-brand-terracotta mt-0.5 shrink-0" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-5 pt-4 border-t border-brand-sand text-xs text-brand-slate/70 leading-relaxed">
+                    If you choose to move forward with one of the corrective program offerings within 7 days of your assessment, you will receive a $25 credit toward your treatment plan or service.
+                  </p>
+                </div>
               </div>
               
               <AssessmentForm onComplete={handleAssessmentComplete} />

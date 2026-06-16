@@ -1488,6 +1488,39 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-12">
+                {((selectedRecord.crmTags?.length ?? 0) > 0 || selectedRecord.emailAutomation || selectedRecord.bookingIntent) && (
+                  <section className="bg-white p-8 rounded-[2rem] border border-brand-sand">
+                    <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-6">
+                      CRM + Automation Direction
+                    </h3>
+                    {(selectedRecord.crmTags?.length ?? 0) > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-5">
+                        {selectedRecord.crmTags!.map((tag) => (
+                          <span key={tag} className="px-3 py-1 bg-brand-cream border border-brand-sand rounded-full text-[9px] uppercase tracking-widest font-bold text-brand-moss">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="grid sm:grid-cols-2 gap-4 text-xs text-brand-moss/70">
+                      {selectedRecord.emailAutomation && (
+                        <div className="bg-brand-cream/50 rounded-2xl p-4 border border-brand-sand/60">
+                          <p className="text-[9px] uppercase tracking-widest font-bold text-brand-moss/50 mb-1">Email Automation</p>
+                          <p className="font-bold text-brand-slate">{selectedRecord.emailAutomation.sequence}</p>
+                          <p className="uppercase tracking-widest text-[9px] text-brand-terracotta mt-2">{selectedRecord.emailAutomation.status}</p>
+                        </div>
+                      )}
+                      {selectedRecord.bookingIntent && (
+                        <div className="bg-brand-cream/50 rounded-2xl p-4 border border-brand-sand/60">
+                          <p className="text-[9px] uppercase tracking-widest font-bold text-brand-moss/50 mb-1">Booking Path</p>
+                          <p className="font-bold text-brand-slate">{selectedRecord.bookingIntent.service}</p>
+                          <p className="uppercase tracking-widest text-[9px] text-brand-terracotta mt-2">{selectedRecord.bookingIntent.provider}</p>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
+
                 {(selectedRecord.screeningAnswers?.length ?? 0) > 0 && (
                   <section className="bg-brand-cream/60 p-8 rounded-[2rem] border border-brand-sand">
                     <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-6">

@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Brain, ArrowRight, Check, ArrowLeft } from 'lucide-react';
+import { ArrowRight, Brain, Calendar, Check, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 type ScreeningStep = 'intro' | 'questions' | 'contact' | 'results';
+
+const POCKETSUITE_BOOKING_URL = import.meta.env.VITE_POCKETSUITE_BOOKING_URL || '/assessment?step=booking';
+const isExternalBookingUrl = POCKETSUITE_BOOKING_URL.startsWith('http');
 
 interface ScreeningAnswers {
   q1: string[];
@@ -143,11 +146,11 @@ export default function SkinIntelligenceScreening() {
     const answer = answers[question.id as keyof ScreeningAnswers];
 
     if (question.type === 'checkbox' && Array.isArray(answer) && answer.length === 0) {
-      alert('Please select at least one option');
+      toast.error('Select at least one response to continue');
       return;
     }
     if (question.type === 'radio' && answer === '') {
-      alert('Please select an option');
+      toast.error('Select the response that best reflects your skin right now');
       return;
     }
 
@@ -165,9 +168,19 @@ export default function SkinIntelligenceScreening() {
     return Array.isArray(answer) ? answer : answer ? [answer] : [];
   };
 
+  const getConcernCategory = () => {
+    const selected = getAnswerList('q1').join(' ').toLowerCase();
+    if (selected.includes('dark') || selected.includes('tone')) return 'pigment';
+    if (selected.includes('sensitivity') || selected.includes('irritation') || selected.includes('redness')) return 'sensitivity-barrier';
+    if (selected.includes('dryness') || selected.includes('dehydration')) return 'dehydration-barrier';
+    if (selected.includes('dull') || selected.includes('changing')) return 'aging-dullness';
+    if (selected.includes('breakouts') || selected.includes('congestion')) return 'congestion';
+    return 'skin-imbalance';
+  };
+
   const handleContactSubmit = async () => {
     if (!answers.firstName || !answers.email) {
-      alert('Please fill in all required fields');
+      toast.error('Add your first name and email to receive your overview');
       return;
     }
 
@@ -182,6 +195,7 @@ export default function SkinIntelligenceScreening() {
       const concerns = getAnswerList('q1');
       const triggerPatterns = getAnswerList('q4');
       const goals = getAnswerList('q6');
+      const concernCategory = getConcernCategory();
 
       await addDoc(collection(db, 'assessments'), {
         fullName: answers.firstName.trim(),
@@ -207,6 +221,23 @@ export default function SkinIntelligenceScreening() {
         clinicalFocus: [...new Set([...concerns, ...triggerPatterns])],
         screeningAnswers: screeningResponses,
         source: 'free-screening',
+        concernCategory,
+        crmTags: [
+          'Skin Intelligence Screening',
+          `Concern: ${concernCategory}`,
+          ...concerns.map((concern) => `Concern: ${concern}`),
+          ...triggerPatterns.map((trigger) => `Trigger: ${trigger}`),
+        ],
+        emailAutomation: {
+          sequence: 'skin-intelligence-screening-overview',
+          status: 'ready',
+          submittedAt: serverTimestamp(),
+        },
+        bookingIntent: {
+          service: 'Skin Intelligence Assessment',
+          provider: isExternalBookingUrl ? 'PocketSuite' : 'Internal',
+          url: POCKETSUITE_BOOKING_URL,
+        },
         createdAt: serverTimestamp(),
         status: 'pending',
       });
@@ -230,9 +261,10 @@ export default function SkinIntelligenceScreening() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-3xl mx-auto px-6 py-20 text-center"
+          className="max-w-6xl mx-auto px-6 py-16"
         >
-          <div className="space-y-8">
+          <div className="grid lg:grid-cols-[1fr_0.85fr] gap-12 items-center">
+            <div className="space-y-8 text-center lg:text-left">
             <div className="inline-flex items-center gap-3 bg-brand-sand/50 px-4 py-2 rounded-full border border-brand-sand">
               <Brain size={16} className="text-brand-moss" />
               <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-moss">
@@ -248,7 +280,7 @@ export default function SkinIntelligenceScreening() {
             </h1>
 
             <div className="space-y-6 max-w-2xl mx-auto">
-              <p className="text-lg text-brand-moss/80 font-light leading-relaxed border-l-2 border-brand-terracotta pl-6">
+              <p className="text-lg text-brand-moss/80 font-light leading-relaxed border-l-2 border-brand-terracotta pl-6 text-left">
                 Your skin follows patterns and reflects underlying physiology. This guided screening is
                 designed to identify how your skin may be functioning, what could be influencing
                 imbalance, and where to begin with more intention and clarity.
@@ -276,6 +308,22 @@ export default function SkinIntelligenceScreening() {
                 Back to home
               </Link>
             </div>
+            </div>
+
+            <div className="relative">
+              <div className="aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl border border-brand-sand bg-brand-sand/20">
+                <img
+                  src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&q=80&w=900"
+                  alt="Editorial skincare consultation"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="absolute -bottom-5 left-5 right-5 bg-white/90 backdrop-blur border border-brand-sand rounded-2xl p-5 shadow-xl">
+                <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-2">We don't guess. We assess.</p>
+                <p className="text-sm text-brand-moss/70 font-light">A guided pre-assessment for melanin-rich skin behavior, triggers, and corrective direction.</p>
+              </div>
+            </div>
           </div>
         </motion.section>
       )}
@@ -291,7 +339,7 @@ export default function SkinIntelligenceScreening() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm uppercase tracking-widest font-bold text-brand-moss">
-                  Question {currentQuestion + 1} of {questions.length}
+                  Skin Intelligence Step {currentQuestion + 1} of {questions.length}
                 </span>
                 <span className="text-sm text-brand-moss/60">
                   {Math.round(((currentQuestion + 1) / questions.length) * 100)}%
@@ -315,9 +363,9 @@ export default function SkinIntelligenceScreening() {
                 <h2 className="text-3xl md:text-4xl font-serif text-brand-slate italic">
                   {question.title}
                 </h2>
-                {question.subtitle && (
-                  <p className="text-sm text-brand-moss/60 font-light italic">{question.subtitle}</p>
-                )}
+                <p className="text-sm text-brand-moss/60 font-light italic">
+                  {question.subtitle || 'Choose the response that best reflects your current skin behavior.'}
+                </p>
               </div>
 
               {/* Options */}
@@ -384,7 +432,7 @@ export default function SkinIntelligenceScreening() {
                 onClick={handleNextQuestion}
                 className="flex-1 px-8 py-4 rounded-full bg-brand-moss text-white font-bold uppercase tracking-widest hover:bg-brand-slate transition-all shadow-lg"
               >
-                {currentQuestion === questions.length - 1 ? 'Next: Contact Info' : 'Next Question'}
+                {currentQuestion === questions.length - 1 ? 'Continue to Contact' : 'Continue'}
               </motion.button>
             </div>
           </div>
@@ -407,7 +455,7 @@ export default function SkinIntelligenceScreening() {
                 ?
               </h2>
               <p className="text-base text-brand-moss/70 font-light">
-                We'll create a personalized overview based on your responses.
+                Your responses will be saved for clinical follow-up and used to prepare your Skin Intelligence pathway.
               </p>
             </div>
 
@@ -467,7 +515,7 @@ export default function SkinIntelligenceScreening() {
               onClick={() => setCurrentQuestion(questions.length - 1)}
               className="w-full text-brand-moss font-light text-sm hover:text-brand-slate transition-all"
             >
-              Back to questions
+              Back to screening
             </motion.button>
           </div>
         </motion.section>
@@ -489,7 +537,7 @@ export default function SkinIntelligenceScreening() {
                 </span>
               </h1>
               <p className="text-lg text-brand-moss/80 font-light">
-                Hello {answers.firstName}, your responses suggest patterns in how your skin may be
+                {answers.firstName ? `Hello ${answers.firstName}, your responses suggest patterns in how your skin may be` : 'Your responses suggest patterns in how your skin may be'}
                 functioning, responding, and adapting over time.
               </p>
             </div>
@@ -564,6 +612,26 @@ export default function SkinIntelligenceScreening() {
                   </p>
                 </div>
               </div>
+
+              {isExternalBookingUrl ? (
+                <a
+                  href={POCKETSUITE_BOOKING_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-3 bg-brand-terracotta text-white px-10 py-5 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-xl"
+                >
+                  Book Skin Intelligence Assessment™
+                  <Calendar size={18} />
+                </a>
+              ) : (
+                <Link
+                  to={POCKETSUITE_BOOKING_URL}
+                  className="inline-flex items-center gap-3 bg-brand-terracotta text-white px-10 py-5 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-xl"
+                >
+                  Book Skin Intelligence Assessment™
+                  <Calendar size={18} />
+                </Link>
+              )}
 
             </div>
 

@@ -37,15 +37,21 @@ const SECTION_SUMMARIES: Record<string, string[]> = {
     'Date of Birth',
     'Phone Number',
     'Email Address',
-    
+    'Occupation',
+    'Emergency Contact Name + Phone Number',
     'How did you hear about Vershanté Lynn Aesthetics?'
   ],
   concerns: [
-    'Acne',
-    'Pigment',
-    'Sensitivity',
-    'Aging',
-    'Overall health'
+    'Hyperpigmentation / dark marks',
+    'Uneven skin tone',
+    'Sensitivity or irritation',
+    'Redness or inflammation',
+    'Breakouts or congestion',
+    'Texture or roughness',
+    'Dryness or dehydration',
+    'Fine lines or visible aging',
+    'Loss of firmness or glow',
+    'Scarring'
   ],
   history: [
     'Have you worked with a skincare professional before?',
@@ -115,11 +121,16 @@ const SECTION_SUMMARIES: Record<string, string[]> = {
 };
 
 const CONCERNS = [
-  { id: 'Acne', desc: 'Active acne, breakouts, and follicular congestion.' },
-  { id: 'Pigment', desc: 'Hyperpigmentation, dark marks, and uneven melanin distribution.' },
-  { id: 'Sensitivity', desc: 'Reactive or easily irritated skin; barrier fragility.' },
-  { id: 'Aging', desc: 'Fine lines, loss of firmness, and texture changes.' },
-  { id: 'Overall health', desc: 'Skin concerns related to systemic health and lifestyle.' }
+  { id: 'Hyperpigmentation / dark marks', desc: 'Visible melanin clusters, dark spots, or uneven tone.' },
+  { id: 'Uneven skin tone', desc: 'Areas of imbalance across tone, clarity, and color.' },
+  { id: 'Sensitivity or irritation', desc: 'Reactive responses to products, treatments, or environmental triggers.' },
+  { id: 'Redness or inflammation', desc: 'Vascular reactivity, flushing, irritation, or barrier distress.' },
+  { id: 'Breakouts or congestion', desc: 'Congestion that may present like acne, clogged pores, or blemishes.' },
+  { id: 'Texture or roughness', desc: 'Surface irregularities, roughness, and uneven refinement.' },
+  { id: 'Dryness or dehydration', desc: 'Tightness, moisture loss, or signs of barrier disruption.' },
+  { id: 'Fine lines or visible aging', desc: 'Early textural change, expression lines, and visible aging concerns.' },
+  { id: 'Loss of firmness or glow', desc: 'Dullness, laxity, reduced bounce, and diminished radiance.' },
+  { id: 'Scarring', desc: 'Post-inflammatory marks, texture shifts, or previous breakout/treatment reminders.' }
 ];
 
 const TREATMENT_OPTIONS = [
@@ -141,7 +152,8 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
     dob: '',
     phoneNumber: '',
     email: '',
-    
+    occupation: '',
+    emergencyContact: '',
     referralSource: '',
     age: '',
     concerns: [],
@@ -415,7 +427,28 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
                       className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
                     />
                   </div>
-                  {/* Emergency contact removed as requested */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Occupation</label>
+                      <input
+                        type="text"
+                        value={formData.occupation || ''}
+                        onChange={e => setFormData({ ...formData, occupation: e.target.value })}
+                        placeholder="Work or daily environment context"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Emergency Contact</label>
+                      <input
+                        type="text"
+                        value={formData.emergencyContact || ''}
+                        onChange={e => setFormData({ ...formData, emergencyContact: e.target.value })}
+                        placeholder="Name + phone number"
+                        className="w-full bg-brand-cream border-b border-brand-sand p-3 focus:border-brand-terracotta outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">How did you hear about Vershanté Lynn Aesthetics?</label>
                     <input
@@ -891,38 +924,19 @@ export default function AssessmentForm({ onComplete }: { onComplete: (data: Asse
               <div className="space-y-6">
                 <div className="space-y-2">
                   <h2 className="text-3xl font-serif text-brand-slate italic leading-tight tracking-tight">Professional Use Only</h2>
-                  <p className="text-brand-moss/80 font-light">This section is reserved for clinician review and will be completed after intake submission.</p>
+                  <p className="text-brand-moss/80 font-light">This portion is reserved for clinician synthesis after your intake is submitted and your consultation is reviewed.</p>
                 </div>
-                <div className="grid gap-4">
-                  {[
-                    { field: 'professionalPrimaryConcerns', label: 'Primary Concerns' },
-                    { field: 'professionalSkinBehavior', label: 'Observed Skin Behavior' },
-                    { field: 'professionalBarrierStatus', label: 'Barrier Status' },
-                    { field: 'professionalInflammationLevel', label: 'Inflammation Level' },
-                    { field: 'professionalPigmentClassification', label: 'Pigment Classification' },
-                    { field: 'professionalTriggerPatterns', label: 'Possible Trigger Patterns' },
-                    { field: 'professionalRecommendedTreatmentPathway', label: 'Recommended Treatment Pathway' },
-                    { field: 'professionalRecommendedHomecare', label: 'Recommended Homecare' }
-                  ].map((item) => (
-                    <div key={item.field} className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">{item.label}</label>
-                      <textarea
-                        value={formData[item.field as keyof AssessmentData] as string || ''}
-                        onChange={e => setFormData({ ...formData, [item.field]: e.target.value })}
-                        placeholder={`Clinician note for ${item.label.toLowerCase()}.`}
-                        className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-20 resize-none text-sm"
-                      />
-                    </div>
-                  ))}
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Professional Notes</label>
-                    <textarea
-                      value={formData.professionalNotes || ''}
-                      onChange={e => setFormData({ ...formData, professionalNotes: e.target.value })}
-                      placeholder="Any additional clinician observations or treatment notes."
-                      className="w-full bg-brand-cream border border-brand-sand rounded-2xl p-4 focus:border-brand-terracotta outline-none transition-colors h-28 resize-none text-sm"
-                    />
-                  </div>
+                <div className="bg-brand-cream/60 border border-brand-sand rounded-[2rem] p-6 space-y-4">
+                  <p className="text-sm text-brand-slate/70 leading-relaxed">
+                    After submission, your professional assessment may include primary concerns, observed skin behavior,
+                    barrier status, inflammation level, pigment classification, trigger patterns, treatment pathway,
+                    recommended homecare, and private professional notes.
+                  </p>
+                  <p className="text-lg font-serif italic text-brand-slate">Your skin is constantly communicating.</p>
+                  <p className="text-sm text-brand-moss/70 leading-relaxed">
+                    The goal is not simply to treat symptoms temporarily, but to better understand the patterns influencing your skin and support healthier function over time.
+                  </p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta">We don't guess. We assess.</p>
                 </div>
               </div>
             )}

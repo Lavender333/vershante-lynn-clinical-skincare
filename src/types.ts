@@ -28,6 +28,8 @@ export interface AssessmentData {
   dob: string;
   phoneNumber: string;
   email: string;
+  occupation?: string;
+  emergencyContact?: string;
   referralSource: string;
   age: string;
   concerns: string[];
@@ -99,6 +101,19 @@ export interface AssessmentData {
   };
   status?: 'pending' | 'reviewed' | 'scheduled' | 'completed'; // Assigned by server
   createdAt?: any; // Assigned by Firestore serverTimestamp
+  source?: string;
+  crmTags?: string[];
+  concernCategory?: string;
+  emailAutomation?: {
+    sequence: string;
+    status: 'ready' | 'sent' | 'failed';
+    submittedAt?: any;
+  };
+  bookingIntent?: {
+    service: string;
+    provider: 'PocketSuite' | 'Internal';
+    url: string;
+  };
 }
 
 export interface ConsultationSlot {
