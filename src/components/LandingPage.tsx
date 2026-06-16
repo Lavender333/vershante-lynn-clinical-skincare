@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { ArrowRight, Brain, Calendar, Clock, FlaskConical, MapPin, Quote, ShieldCheck, Heart } from 'lucide-react';
+import { ArrowRight, Brain, Calendar, Clock, FlaskConical, MapPin, Quote, ShieldCheck, Heart, Droplets } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { EventPost } from '../types';
 
@@ -99,35 +99,57 @@ export default function LandingPage() {
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="max-w-7xl mx-auto px-6">
-            <div className="grid md:grid-cols-3 gap-12">
+            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-10">
             
             <div className="space-y-6">
               <div className="w-16 h-16 bg-brand-moss/20 rounded-2xl flex items-center justify-center border border-brand-moss/40">
-                <Heart className="text-brand-moss" />
+                <ShieldCheck className="text-brand-moss" />
               </div>
-              <h3 className="text-3xl font-serif italic text-brand-sand">Postpartum Skincare</h3>
+              <h3 className="text-3xl font-serif italic text-brand-sand">Pigment & Uneven Tone</h3>
               <p className="text-brand-sand/60 font-light leading-relaxed text-sm">
-                Restoring balance and cellular health after significant biological and hormonal shifts. 
+                Hyperpigmentation, dark marks, uneven tone, and discoloration that lingers after irritation.
+              </p>
+              <p className="text-[11px] text-brand-sand/40 font-light leading-relaxed">
+                Suggested imagery: natural-light portraits and close skin details on melanin-rich complexions, with visible radiance and tone variation.
               </p>
             </div>
 
             <div className="space-y-6">
               <div className="w-16 h-16 bg-brand-sand/20 rounded-2xl flex items-center justify-center border border-brand-sand/40">
-                <Brain className="text-brand-sand" />
+                <Droplets className="text-brand-sand" />
               </div>
-              <h3 className="text-3xl font-serif italic text-brand-sand">Menopause Intelligence</h3>
+              <h3 className="text-3xl font-serif italic text-brand-sand">Sensitivity & Barrier Disruption</h3>
               <p className="text-brand-sand/60 font-light leading-relaxed text-sm">
-                Specialized protocols for deep hydration and elasticity as the skin barrier evolves.
+                Irritation, inflammation, redness, dehydration, and skin that reacts easily to products or stress.
+              </p>
+              <p className="text-[11px] text-brand-sand/40 font-light leading-relaxed">
+                Suggested imagery: calm, makeup-free skin, hydration textures, barrier-support products, and soft clinical treatment moments.
               </p>
             </div>
             
             <div className="space-y-6">
               <div className="w-16 h-16 bg-brand-slate/20 rounded-2xl flex items-center justify-center border border-brand-sand/40">
-                <ShieldCheck className="text-brand-terracotta" />
+                <FlaskConical className="text-brand-terracotta" />
               </div>
-              <h3 className="text-3xl font-serif italic text-brand-sand">Patterns of Pigment</h3>
+              <h3 className="text-3xl font-serif italic text-brand-sand">Congestion & Texture</h3>
               <p className="text-brand-sand/60 font-light leading-relaxed text-sm">
-                Advanced correction for hyperpigmentation patterns and persistent melanin-rich marking.
+                Breakouts, clogged pores, roughness, and congestion that can sometimes present like acne.
+              </p>
+              <p className="text-[11px] text-brand-sand/40 font-light leading-relaxed">
+                Suggested imagery: refined skin texture closeups, consultation scenes, and product review details without harsh medical zoom.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="w-16 h-16 bg-brand-terracotta/20 rounded-2xl flex items-center justify-center border border-brand-terracotta/40">
+                <Heart className="text-brand-terracotta" />
+              </div>
+              <h3 className="text-3xl font-serif italic text-brand-sand">Aging, Dullness & Skin Changes</h3>
+              <p className="text-brand-sand/60 font-light leading-relaxed text-sm">
+                Fine lines, loss of glow, firmness changes, dullness, and skin shifts that develop with time.
+              </p>
+              <p className="text-[11px] text-brand-sand/40 font-light leading-relaxed">
+                Suggested imagery: elegant 30+ portraits, luminous mature skin, soft side-lighting, and editorial face or hand details.
               </p>
             </div>
           </div>
