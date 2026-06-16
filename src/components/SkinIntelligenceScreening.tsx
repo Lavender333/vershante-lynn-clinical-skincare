@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { Brain, ArrowRight, Check, ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 type ScreeningStep = 'intro' | 'questions' | 'contact' | 'results';
 
@@ -20,6 +23,7 @@ interface ScreeningAnswers {
 export default function SkinIntelligenceScreening() {
   const [step, setStep] = useState<ScreeningStep>('intro');
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
   const [answers, setAnswers] = useState<ScreeningAnswers>({
     q1: [],
     q2: '',
@@ -154,12 +158,68 @@ export default function SkinIntelligenceScreening() {
     }
   };
 
-  const handleContactSubmit = () => {
+  const getAnswer = (questionId: string) => answers[questionId as keyof ScreeningAnswers];
+
+  const getAnswerList = (questionId: string) => {
+    const answer = getAnswer(questionId);
+    return Array.isArray(answer) ? answer : answer ? [answer] : [];
+  };
+
+  const handleContactSubmit = async () => {
     if (!answers.firstName || !answers.email) {
       alert('Please fill in all required fields');
       return;
     }
-    setStep('results');
+
+    setSubmitting(true);
+    try {
+      const screeningResponses = questions.map((question) => ({
+        id: question.id,
+        question: question.title,
+        answer: getAnswer(question.id),
+      }));
+
+      const concerns = getAnswerList('q1');
+      const triggerPatterns = getAnswerList('q4');
+      const goals = getAnswerList('q6');
+
+      await addDoc(collection(db, 'assessments'), {
+        fullName: answers.firstName.trim(),
+        preferredName: answers.firstName.trim(),
+        email: answers.email.trim(),
+        phoneNumber: answers.phone.trim(),
+        referralSource: 'Free Skin Intelligence Screening',
+        age: '',
+        concerns,
+        sensitivityLevel: 'Medium',
+        hormonalStage: 'Standard',
+        stressLevel: 5,
+        sleepQuality: 'Average',
+        waterIntake: 'Standard',
+        dietaryProfile: [],
+        activityLevel: 'Moderate',
+        caffeineIntake: 'Moderate',
+        currentRoutine: '',
+        professionalHistory: '',
+        goals: goals.join(', '),
+        investmentPreference: 'Free Screening Follow-up',
+        primaryIntent: goals.join(', ') || 'Free screening submission',
+        clinicalFocus: [...new Set([...concerns, ...triggerPatterns])],
+        screeningAnswers: screeningResponses,
+        source: 'free-screening',
+        createdAt: serverTimestamp(),
+        status: 'pending',
+      });
+
+      setStep('results');
+    } catch (error) {
+      console.error('Free screening submission error:', error);
+      toast.error('Screening not saved', {
+        description: 'Please try again so your screening can be sent to the clinical dashboard.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const question = questions[currentQuestion];
@@ -396,9 +456,10 @@ export default function SkinIntelligenceScreening() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleContactSubmit}
-              className="w-full px-12 py-5 rounded-full bg-brand-terracotta text-white font-bold uppercase tracking-widest hover:bg-brand-slate transition-all shadow-lg"
+              disabled={submitting}
+              className="w-full px-12 py-5 rounded-full bg-brand-terracotta text-white font-bold uppercase tracking-widest hover:bg-brand-slate transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              View My Skin Intelligence Overview
+              {submitting ? 'Saving Screening...' : 'View My Skin Intelligence Overview'}
             </motion.button>
 
             <motion.button
@@ -431,13 +492,6 @@ export default function SkinIntelligenceScreening() {
                 Hello {answers.firstName}, your responses suggest patterns in how your skin may be
                 functioning, responding, and adapting over time.
               </p>
-              <Link
-                to="/assessment?step=booking"
-                className="inline-flex items-center gap-3 bg-brand-terracotta text-white px-10 py-4 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-xl"
-              >
-                Schedule Assessment
-                <ArrowRight size={18} />
-              </Link>
             </div>
 
             {/* Education Section */}
@@ -511,19 +565,6 @@ export default function SkinIntelligenceScreening() {
                 </div>
               </div>
 
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="inline-flex"
-              >
-                <Link
-                  to="/assessment?step=booking"
-                  className="inline-flex items-center gap-3 bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-xl"
-                >
-                  Schedule Assessment
-                  <ArrowRight size={20} />
-                </Link>
-              </motion.div>
             </div>
 
             {/* Close */}

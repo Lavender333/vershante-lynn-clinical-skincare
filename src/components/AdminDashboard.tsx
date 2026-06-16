@@ -60,6 +60,12 @@ import BookingCalendar from './BookingCalendar';
 interface AssessmentRecord extends AssessmentData {
   id: string;
   createdAt: any;
+  source?: string;
+  screeningAnswers?: {
+    id: string;
+    question: string;
+    answer: string | string[];
+  }[];
 }
 
 export default function AdminDashboard() {
@@ -628,8 +634,8 @@ export default function AdminDashboard() {
   }
 
   const filteredRecords = records.filter(record => 
-    record.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    record.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (record.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (record.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -740,15 +746,26 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="relative w-full md:w-80">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-sand" size={16} />
-                <input 
-                  type="text"
-                  placeholder="Search assessments..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-white border border-brand-sand rounded-full pl-12 pr-6 py-3 text-sm outline-none focus:border-brand-terracotta transition-all shadow-sm"
-                />
+              <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
+                <a
+                  href="https://lavender333.github.io/vershante-lynn-clinical-skincare/assessment"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-brand-terracotta text-white px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-sm whitespace-nowrap"
+                >
+                  Assessment Link
+                  <ExternalLink size={13} />
+                </a>
+                <div className="relative w-full md:w-80">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-sand" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search assessments..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-white border border-brand-sand rounded-full pl-12 pr-6 py-3 text-sm outline-none focus:border-brand-terracotta transition-all shadow-sm"
+                  />
+                </div>
               </div>
             </div>
 
@@ -773,7 +790,7 @@ export default function AdminDashboard() {
                           "text-[8px] uppercase tracking-widest font-bold px-3 py-1 rounded-full",
                           record.status === 'scheduled' ? "bg-brand-terracotta text-white" : "bg-brand-sand text-brand-moss"
                         )}>
-                          {record.status}
+                          {record.source === 'free-screening' ? 'screening' : record.status}
                         </span>
                         <p className="text-[8px] text-brand-sand font-bold mt-2 uppercase tracking-widest">
                           {record.createdAt?.toDate ? format(record.createdAt.toDate(), 'MMM d, HH:mm') : 'Recent'}
@@ -787,14 +804,14 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-1.5">
-                      {record.clinicalFocus.slice(0, 2).map((focus, i) => (
+                      {(record.clinicalFocus || []).slice(0, 2).map((focus, i) => (
                         <span key={i} className="text-[8px] uppercase tracking-widest font-bold bg-white/50 border border-brand-sand px-2 py-1 rounded-sm text-brand-moss">
                           {focus}
                         </span>
                       ))}
-                      {record.clinicalFocus.length > 2 && (
+                      {(record.clinicalFocus || []).length > 2 && (
                         <span className="text-[8px] uppercase tracking-widest font-bold bg-brand-sand/20 px-2 py-1 rounded-sm text-brand-moss">
-                          +{record.clinicalFocus.length - 2}
+                          +{(record.clinicalFocus || []).length - 2}
                         </span>
                       )}
                     </div>
@@ -1199,6 +1216,26 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-12">
+                {(selectedRecord.screeningAnswers?.length ?? 0) > 0 && (
+                  <section className="bg-brand-cream/60 p-8 rounded-[2rem] border border-brand-sand">
+                    <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-6">
+                      Free Screening Responses
+                    </h3>
+                    <div className="space-y-5">
+                      {selectedRecord.screeningAnswers!.map((response) => (
+                        <div key={response.id} className="border-b border-brand-sand/40 pb-4 last:border-0 last:pb-0">
+                          <p className="text-[10px] uppercase tracking-widest font-bold text-brand-moss/60 mb-2">
+                            {response.question}
+                          </p>
+                          <p className="text-sm text-brand-slate font-light">
+                            {Array.isArray(response.answer) ? response.answer.join(', ') : response.answer}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
                 <section>
                   <div className="flex justify-between items-center mb-6 border-b border-brand-sand pb-2">
                     <h3 className="text-[10px] uppercase tracking-widest font-bold text-brand-terracotta">Clinical Insights</h3>
@@ -1359,7 +1396,7 @@ export default function AdminDashboard() {
                   <div>
                     <h3 className="text-[10px] uppercase tracking-widest font-bold text-brand-slate mb-4">Patient Concerns</h3>
                     <div className="flex flex-wrap gap-2">
-                      {selectedRecord.concerns.map((c, i) => (
+                      {(selectedRecord.concerns || []).map((c, i) => (
                         <span key={i} className="px-3 py-1 bg-brand-sand/10 rounded-full text-[10px] text-brand-moss border border-brand-sand/30">{c}</span>
                       ))}
                     </div>
@@ -1367,7 +1404,7 @@ export default function AdminDashboard() {
                   <div>
                     <h3 className="text-[10px] uppercase tracking-widest font-bold text-brand-slate mb-4">Clinical Focus</h3>
                     <div className="flex flex-wrap gap-2">
-                      {selectedRecord.clinicalFocus.map((f, i) => (
+                      {(selectedRecord.clinicalFocus || []).map((f, i) => (
                         <span key={i} className="px-3 py-1 bg-brand-moss text-white rounded-full text-[10px] font-bold tracking-widest uppercase">{f}</span>
                       ))}
                     </div>
@@ -1377,7 +1414,7 @@ export default function AdminDashboard() {
                 <section>
                   <h3 className="text-[10px] uppercase tracking-widest font-bold text-brand-slate mb-4">Dietary Profile</h3>
                   <div className="flex flex-wrap gap-2">
-                    {selectedRecord.dietaryProfile.map((d, i) => (
+                    {(selectedRecord.dietaryProfile || []).map((d, i) => (
                       <span key={i} className="px-3 py-1 bg-brand-sand/10 rounded-full text-[10px] text-brand-moss italic">{d}</span>
                     ))}
                   </div>

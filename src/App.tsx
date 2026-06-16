@@ -28,8 +28,6 @@ function Footer() {
             <p className="text-sm text-brand-moss/70 font-light leading-relaxed">Clinical, intentional skincare strategy — modern, elevated, and melanin-inclusive.</p>
             <div className="text-[11px] italic text-brand-slate/60">
               <div>We don't guess. We assess.</div>
-              <div>Your skin follows patterns.</div>
-              <div>Your skin isn't misbehaving, it's communicating.</div>
             </div>
           </div>
           <div className="flex gap-4">
@@ -47,7 +45,6 @@ function Footer() {
           <ul className="space-y-4 text-sm text-brand-moss/80 font-light">
             <li><Link to="/" className="hover:text-brand-terracotta transition-colors">The Edge</Link></li>
             <li><Link to="/screening" className="hover:text-brand-terracotta transition-colors">Free Screening</Link></li>
-            <li><Link to="/assessment" className="hover:text-brand-terracotta transition-colors">Assessment Form</Link></li>
             <li><Link to="/philosophy" className="hover:text-brand-terracotta transition-colors">Philosophy</Link></li>
             <li><Link to="/contact" className="hover:text-brand-terracotta transition-colors">Contact Us</Link></li>
             <li><Link to="/my-intelligence" className="hover:text-brand-terracotta transition-colors">My Intelligence Portal</Link></li>

@@ -670,7 +670,6 @@ export default function ClientDashboard() {
                     {records.length === 0 && (
                         <div className="sm:col-span-2 py-12 text-center bg-brand-sand/10 rounded-[2rem] border border-dashed border-brand-sand">
                             <p className="text-brand-moss/40 italic font-light">No intelligence records found on this account.</p>
-                            <Link to="/assessment" className="text-brand-terracotta font-bold uppercase tracking-widest text-[10px] mt-4 inline-block hover:underline">Start Assessment</Link>
                         </div>
                     )}
                 </div>

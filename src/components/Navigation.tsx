@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FlaskConical, User, Sparkles, Lock } from 'lucide-react';
+import { FlaskConical, Lock } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -50,15 +50,12 @@ export default function Navigation() {
             <span className="text-[10px] uppercase tracking-[0.3em] text-brand-moss font-bold">Skin Intelligence</span>
             <div className="mt-2 space-y-0.5">
               <span className="text-[10px] italic text-brand-slate/60 block">We don't guess. We assess.</span>
-              <span className="text-[10px] italic text-brand-slate/60 block">Your skin follows patterns.</span>
-              <span className="text-[10px] italic text-brand-slate/60 block">Your skin isn't misbehaving, it's communicating.</span>
             </div>
           </div>
         </Link>
         
         <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest font-bold text-brand-slate">
           <Link to="/" className={cn("hover:text-brand-terracotta transition-colors", location.pathname === '/' && "text-brand-terracotta")} aria-current={location.pathname === '/' ? "page" : undefined}>The Edge</Link>
-          <Link to="/assessment" className={cn("hover:text-brand-terracotta transition-colors", location.pathname === '/assessment' && "text-brand-terracotta")} aria-current={location.pathname === '/assessment' ? "page" : undefined}>Assessment</Link>
           
           {isAdmin && (
             <Link to="/dashboard" className={cn("flex items-center gap-1 text-brand-moss hover:text-brand-terracotta transition-colors", location.pathname === '/dashboard' && "text-brand-terracotta")} aria-current={location.pathname === '/dashboard' ? "page" : undefined}>
@@ -86,12 +83,11 @@ export default function Navigation() {
           </Link>
         </div>
 
-        <Link 
-          to="/assessment"
+        <Link
+          to="/screening"
           className="bg-brand-terracotta text-white px-6 py-2.5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-brand-slate transition-all hover:scale-105 active:scale-95 flex items-center gap-2 shadow-lg shadow-brand-terracotta/20"
         >
-          Begin Diagnostic
-          <Sparkles size={14} />
+          Free Screening
         </Link>
       </div>
     </nav>

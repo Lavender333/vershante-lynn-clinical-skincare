@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Brain, FlaskConical, Quote, ArrowRight, ShieldCheck, Zap, Heart } from 'lucide-react';
+import { Brain, FlaskConical, Quote, ShieldCheck, Heart } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -19,7 +19,7 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center gap-3 bg-brand-sand/50 px-4 py-2 rounded-full border border-brand-sand">
               <FlaskConical size={16} className="text-brand-moss" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-moss">Your skin isn't misbehaving, it's communicating.</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-brand-moss">We don't guess. We assess.</span>
             </div>
             
             <h1 className="text-6xl md:text-8xl font-serif text-brand-slate leading-[0.9] italic">
@@ -38,13 +38,6 @@ export default function LandingPage() {
               >
                 Start Free Screening
                 <Brain size={18} />
-              </Link>
-              <Link
-                to="/assessment?step=booking"
-                className="bg-brand-terracotta text-white px-8 py-4 rounded-full text-[13px] uppercase tracking-[0.12em] font-bold hover:bg-brand-slate transition-all flex items-center gap-3 shadow-xl shadow-brand-terracotta/30"
-              >
-                Schedule Assessment
-                <ArrowRight size={16} />
               </Link>
             </div>
           </motion.div>
@@ -209,12 +202,6 @@ export default function LandingPage() {
               className="inline-block bg-brand-terracotta text-white px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-2xl"
             >
               Begin Free Screening
-            </Link>
-            <Link 
-              to="/assessment"
-              className="inline-block border-2 border-brand-cream text-brand-cream px-12 py-5 rounded-full text-sm uppercase tracking-widest font-bold hover:bg-white/10 transition-all"
-            >
-              Learn About Assessment
             </Link>
           </div>
         </div>

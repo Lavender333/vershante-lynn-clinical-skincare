@@ -47,9 +47,7 @@ service cloud.firestore {
     match /assessments/{assessmentId} {
       // Create: Publicly allowed if it has the core identity fields
       allow create: if isValidId(assessmentId) 
-        && incoming().fullName is string
-        && incoming().email is string
-        && incoming().status == 'pending'
+        && isValidAssessment(incoming())
         && incoming().createdAt == request.time;
 
       // Update: User can update their own slot, or admin can update anything
