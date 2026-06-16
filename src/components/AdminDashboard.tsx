@@ -27,6 +27,7 @@ import {
   Calendar, 
   User as UserIcon, 
   Mail, 
+  Phone,
   Activity, 
   Trash2, 
   ChevronRight, 
@@ -49,7 +50,8 @@ import {
   Monitor,
   ExternalLink,
   ChevronLeft,
-  CheckCircle2
+  CheckCircle2,
+  ClipboardList
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AssessmentData, EventPost, OperatingHours } from '../types';
@@ -81,7 +83,7 @@ export default function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAdminState, setIsAdminState] = useState(false);
-  const [activeTab, setActiveTab] = useState<'assessments' | 'events' | 'team' | 'settings'>('assessments');
+  const [activeTab, setActiveTab] = useState<'assessments' | 'clients' | 'events' | 'team' | 'settings'>('assessments');
   const [activeSubTab, setActiveSubTab] = useState<'list' | 'calendar'>('list');
   const [adminsList, setAdminsList] = useState<{id: string, email: string}[]>([]);
   const [operatingHours, setOperatingHours] = useState<OperatingHours | null>(null);
@@ -467,12 +469,16 @@ export default function AdminDashboard() {
 
   const handleLogout = () => signOut(auth);
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const deleteRecord = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this clinical record?")) {
       await deleteDoc(doc(db, 'assessments', id));
       if (selectedRecord?.id === id) setSelectedRecord(null);
     }
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await deleteRecord(id);
   };
 
   const handleSaveVitals = async () => {
@@ -742,7 +748,50 @@ export default function AdminDashboard() {
 
   const filteredRecords = records.filter(record => 
     (record.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (record.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (record.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (record.phoneNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (record.clinicalFocus || []).join(' ').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (record.crmTags || []).join(' ').toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const clientGroups = filteredRecords.reduce((groups, record) => {
+    const key = (record.email || record.fullName || record.id).toLowerCase().trim();
+    if (!groups[key]) {
+      groups[key] = [];
+    }
+    groups[key].push(record);
+    return groups;
+  }, {} as Record<string, AssessmentRecord[]>);
+
+  const clients = Object.values(clientGroups).map((history) => {
+    const sortedHistory = [...history].sort((a, b) => {
+      const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+      const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+      return bTime - aTime;
+    });
+    const latest = sortedHistory[0];
+    return {
+      key: (latest.email || latest.fullName || latest.id).toLowerCase().trim(),
+      latest,
+      history: sortedHistory,
+      scheduledCount: sortedHistory.filter(record => record.consultationSlot || record.status === 'scheduled').length,
+      screeningCount: sortedHistory.filter(record => record.source === 'free-screening').length,
+    };
+  });
+
+  const clientEmails = clients
+    .map(client => client.latest.email)
+    .filter((clientEmail): clientEmail is string => Boolean(clientEmail));
+  const mailAllHref = clientEmails.length
+    ? `mailto:?bcc=${encodeURIComponent([...new Set(clientEmails)].join(','))}&subject=${encodeURIComponent('Vershante Lynn Aesthetics')}`
+    : undefined;
+
+  const formatRecordDate = (record: AssessmentRecord) => (
+    record.createdAt?.toDate ? format(record.createdAt.toDate(), 'MMM d, yyyy') : 'Recent'
+  );
+
+  const getRecordLabel = (record: AssessmentRecord) => (
+    record.source === 'free-screening' ? 'Free Screening' : 'Skin Intelligence Assessment'
   );
 
   return (
@@ -767,7 +816,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="space-y-1 mb-8">
-              <button 
+              <button
                 onClick={() => setActiveTab('assessments')}
                 className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-widest",
@@ -776,6 +825,16 @@ export default function AdminDashboard() {
               >
                   <FlaskConical size={14} />
                   Submissions
+              </button>
+              <button
+                onClick={() => setActiveTab('clients')}
+                className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-widest",
+                    activeTab === 'clients' ? "bg-white/10 text-brand-terracotta" : "text-white/60 hover:bg-white/5"
+                )}
+              >
+                  <Users size={14} />
+                  Clients
               </button>
               <button
                 onClick={() => setActiveTab('events')}
@@ -912,6 +971,13 @@ export default function AdminDashboard() {
                         <p className="text-[8px] text-brand-sand font-bold mt-2 uppercase tracking-widest">
                           {record.createdAt?.toDate ? format(record.createdAt.toDate(), 'MMM d, HH:mm') : 'Recent'}
                         </p>
+                        <button
+                          onClick={(e) => handleDelete(record.id, e)}
+                          className="mt-3 inline-flex items-center gap-1 text-[8px] uppercase tracking-widest font-bold text-brand-sand hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={12} />
+                          Delete
+                        </button>
                       </div>
                     </div>
 
@@ -941,12 +1007,7 @@ export default function AdminDashboard() {
                             {record.consultationSlot.date} @ {record.consultationSlot.time}
                           </span>
                         </div>
-                        <button 
-                          onClick={(e) => handleDelete(record.id, e)}
-                          className="p-2 text-brand-sand hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <ChevronRight size={14} />
                       </div>
                     )}
                   </motion.div>
@@ -962,6 +1023,151 @@ export default function AdminDashboard() {
               />
             )}
           </>
+        ) : activeTab === 'clients' ? (
+          <div className="max-w-7xl mx-auto py-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+              <div>
+                <h1 className="text-4xl font-serif text-brand-slate italic mb-2">Client Directory</h1>
+                <p className="text-brand-moss/60 font-light italic">
+                  Everyone who has submitted a screening or assessment, grouped by client history.
+                </p>
+              </div>
+              <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
+                <a
+                  href={mailAllHref}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-2 bg-brand-moss text-white px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold transition-all shadow-sm whitespace-nowrap",
+                    mailAllHref ? "hover:bg-brand-slate" : "opacity-40 pointer-events-none"
+                  )}
+                >
+                  <Mail size={13} />
+                  Contact All
+                </a>
+                <div className="relative w-full md:w-80">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-sand" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search clients..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-white border border-brand-sand rounded-full pl-12 pr-6 py-3 text-sm outline-none focus:border-brand-terracotta transition-all shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white border border-brand-sand rounded-2xl p-6">
+                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-moss/50 mb-2">Total Clients</p>
+                <p className="text-4xl font-serif italic text-brand-slate">{clients.length}</p>
+              </div>
+              <div className="bg-white border border-brand-sand rounded-2xl p-6">
+                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-moss/50 mb-2">Free Screenings</p>
+                <p className="text-4xl font-serif italic text-brand-slate">{records.filter(record => record.source === 'free-screening').length}</p>
+              </div>
+              <div className="bg-white border border-brand-sand rounded-2xl p-6">
+                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-moss/50 mb-2">Booked Assessments</p>
+                <p className="text-4xl font-serif italic text-brand-slate">{records.filter(record => record.consultationSlot || record.status === 'scheduled').length}</p>
+              </div>
+            </div>
+
+            {clients.length > 0 ? (
+              <div className="grid xl:grid-cols-2 gap-6">
+                {clients.map((client) => (
+                  <article key={client.key} className="bg-white border border-brand-sand rounded-[2rem] p-6 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 pb-5 border-b border-brand-sand">
+                      <div className="flex gap-4 min-w-0">
+                        <div className="w-14 h-14 rounded-2xl bg-brand-moss/10 text-brand-moss flex items-center justify-center shrink-0">
+                          <UserIcon size={22} />
+                        </div>
+                        <div className="min-w-0">
+                          <h2 className="text-2xl font-serif italic text-brand-slate truncate">{client.latest.fullName}</h2>
+                          <p className="text-xs text-brand-moss/60 truncate">{client.latest.email}</p>
+                          {client.latest.phoneNumber && (
+                            <p className="text-xs text-brand-moss/50 truncate">{client.latest.phoneNumber}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {client.latest.email && (
+                          <a
+                            href={`mailto:${client.latest.email}`}
+                            className="inline-flex items-center gap-2 bg-brand-slate text-white px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover:bg-brand-moss transition-all"
+                          >
+                            <Mail size={12} />
+                            Email
+                          </a>
+                        )}
+                        {client.latest.phoneNumber && (
+                          <a
+                            href={`tel:${client.latest.phoneNumber}`}
+                            className="inline-flex items-center gap-2 border border-brand-sand text-brand-moss px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover:border-brand-terracotta transition-all"
+                          >
+                            <Phone size={12} />
+                            Call
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 py-5">
+                      <div className="bg-brand-cream/60 rounded-2xl p-4 text-center">
+                        <p className="text-xl font-serif italic text-brand-slate">{client.history.length}</p>
+                        <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">Total Records</p>
+                      </div>
+                      <div className="bg-brand-cream/60 rounded-2xl p-4 text-center">
+                        <p className="text-xl font-serif italic text-brand-slate">{client.screeningCount}</p>
+                        <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">Screenings</p>
+                      </div>
+                      <div className="bg-brand-cream/60 rounded-2xl p-4 text-center">
+                        <p className="text-xl font-serif italic text-brand-slate">{client.scheduledCount}</p>
+                        <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">Booked</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-terracotta">
+                        <ClipboardList size={13} />
+                        Service + Submission History
+                      </div>
+                      {client.history.map((record) => (
+                        <div key={record.id} className="border border-brand-sand rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <button
+                            onClick={() => setSelectedRecord(record)}
+                            className="text-left flex-grow min-w-0"
+                          >
+                            <p className="text-sm font-bold text-brand-slate">{getRecordLabel(record)}</p>
+                            <p className="text-[10px] uppercase tracking-widest text-brand-moss/50 mt-1">
+                              {formatRecordDate(record)}
+                              {record.consultationSlot ? ` • ${record.consultationSlot.date} at ${record.consultationSlot.time}` : ''}
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 mt-3">
+                              {(record.crmTags || record.clinicalFocus || []).slice(0, 3).map((tag, index) => (
+                                <span key={`${record.id}-${tag}-${index}`} className="text-[8px] uppercase tracking-widest font-bold bg-brand-sand/20 text-brand-moss px-2 py-1 rounded-full">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => deleteRecord(record.id)}
+                            className="inline-flex items-center justify-center gap-2 text-[9px] uppercase tracking-widest font-bold text-brand-sand hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={13} />
+                            Delete
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white border border-dashed border-brand-sand rounded-[2rem] p-12 text-center">
+                <p className="text-brand-moss/50 font-serif italic text-xl">No clients match this search.</p>
+              </div>
+            )}
+          </div>
         ) : activeTab === 'events' ? (
           <div className="max-w-6xl mx-auto py-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -1251,6 +1457,33 @@ export default function AdminDashboard() {
                     <p className="text-brand-moss/60 flex items-center gap-2">
                       <Mail size={12} /> {selectedRecord.email}
                     </p>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {selectedRecord.email && (
+                        <a
+                          href={`mailto:${selectedRecord.email}`}
+                          className="inline-flex items-center gap-2 bg-brand-slate text-white px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover:bg-brand-moss transition-all"
+                        >
+                          <Mail size={12} />
+                          Email Client
+                        </a>
+                      )}
+                      {selectedRecord.phoneNumber && (
+                        <a
+                          href={`tel:${selectedRecord.phoneNumber}`}
+                          className="inline-flex items-center gap-2 border border-brand-sand text-brand-moss px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover:border-brand-terracotta transition-all"
+                        >
+                          <Phone size={12} />
+                          Call
+                        </a>
+                      )}
+                      <button
+                        onClick={() => deleteRecord(selectedRecord.id)}
+                        className="inline-flex items-center gap-2 border border-red-100 text-red-500 px-4 py-2 rounded-full text-[9px] uppercase tracking-widest font-bold hover:bg-red-50 transition-all"
+                      >
+                        <Trash2 size={12} />
+                        Delete Record
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <button 
