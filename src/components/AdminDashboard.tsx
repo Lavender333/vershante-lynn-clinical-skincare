@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../lib/firebase';
 import { 
   collection, 
+  addDoc,
   query, 
   orderBy, 
   onSnapshot, 
@@ -51,7 +52,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AssessmentData, OperatingHours } from '../types';
+import { AssessmentData, EventPost, OperatingHours } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isSameMonth } from 'date-fns';
@@ -72,6 +73,7 @@ export default function AdminDashboard() {
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [loading, setLoading] = useState(!auth.currentUser);
   const [records, setRecords] = useState<AssessmentRecord[]>([]);
+  const [events, setEvents] = useState<EventPost[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AssessmentRecord | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -79,7 +81,7 @@ export default function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAdminState, setIsAdminState] = useState(false);
-  const [activeTab, setActiveTab] = useState<'assessments' | 'team' | 'settings'>('assessments');
+  const [activeTab, setActiveTab] = useState<'assessments' | 'events' | 'team' | 'settings'>('assessments');
   const [activeSubTab, setActiveSubTab] = useState<'list' | 'calendar'>('list');
   const [adminsList, setAdminsList] = useState<{id: string, email: string}[]>([]);
   const [operatingHours, setOperatingHours] = useState<OperatingHours | null>(null);
@@ -89,6 +91,16 @@ export default function AdminDashboard() {
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
   const [editingAdminId, setEditingAdminId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [eventForm, setEventForm] = useState<EventPost>({
+    title: '',
+    date: '',
+    time: '',
+    location: '',
+    description: '',
+    imageUrl: ''
+  });
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [eventSaving, setEventSaving] = useState(false);
 
   // Edit State
   const [isEditing, setIsEditing] = useState(false);
@@ -168,6 +180,20 @@ export default function AdminDashboard() {
       return unsubscribe;
     }
   }, [user, isAdminState, activeTab]);
+
+  useEffect(() => {
+    if (user && isAdminState) {
+      const q = query(collection(db, 'events'), orderBy('date', 'asc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as EventPost[];
+        setEvents(data);
+      });
+      return unsubscribe;
+    }
+  }, [user, isAdminState]);
 
   useEffect(() => {
     if (user && isAdminState) {
@@ -258,6 +284,87 @@ export default function AdminDashboard() {
       } catch (e) {
         console.error("Error removing admin:", e);
       }
+    }
+  };
+
+  const resetEventForm = () => {
+    setEventForm({
+      title: '',
+      date: '',
+      time: '',
+      location: '',
+      description: '',
+      imageUrl: ''
+    });
+    setEditingEventId(null);
+  };
+
+  const handleEditEvent = (event: EventPost) => {
+    setEventForm({
+      title: event.title || '',
+      date: event.date || '',
+      time: event.time || '',
+      location: event.location || '',
+      description: event.description || '',
+      imageUrl: event.imageUrl || ''
+    });
+    setEditingEventId(event.id || null);
+  };
+
+  const handleSaveEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eventForm.title || !eventForm.date || !eventForm.time || !eventForm.location || !eventForm.description) {
+      toast.error('Event needs a little more detail', {
+        description: 'Add a title, date, time, location, and short description.'
+      });
+      return;
+    }
+
+    setEventSaving(true);
+    try {
+      const payload = {
+        title: eventForm.title.trim(),
+        date: eventForm.date,
+        time: eventForm.time.trim(),
+        location: eventForm.location.trim(),
+        description: eventForm.description.trim(),
+        imageUrl: eventForm.imageUrl?.trim() || '',
+        updatedAt: serverTimestamp()
+      };
+
+      if (editingEventId) {
+        await updateDoc(doc(db, 'events', editingEventId), payload);
+        toast.success('Event updated');
+      } else {
+        await addDoc(collection(db, 'events'), {
+          ...payload,
+          createdAt: serverTimestamp()
+        });
+        toast.success('Event posted to homepage');
+      }
+
+      resetEventForm();
+    } catch (error) {
+      console.error('Failed to save event', error);
+      toast.error('Event save failed', {
+        description: 'Please try again from the admin dashboard.'
+      });
+    } finally {
+      setEventSaving(false);
+    }
+  };
+
+  const handleDeleteEvent = async (eventId?: string) => {
+    if (!eventId) return;
+    if (!window.confirm('Delete this homepage event?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'events', eventId));
+      if (editingEventId === eventId) resetEventForm();
+      toast.success('Event removed');
+    } catch (error) {
+      console.error('Failed to delete event', error);
+      toast.error('Unable to remove event');
     }
   };
 
@@ -670,6 +777,16 @@ export default function AdminDashboard() {
                   <FlaskConical size={14} />
                   Submissions
               </button>
+              <button
+                onClick={() => setActiveTab('events')}
+                className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-widest",
+                    activeTab === 'events' ? "bg-white/10 text-brand-terracotta" : "text-white/60 hover:bg-white/5"
+                )}
+              >
+                  <Calendar size={14} />
+                  Events
+              </button>
               <button 
                 onClick={() => setActiveTab('team')}
                 className={cn(
@@ -845,6 +962,161 @@ export default function AdminDashboard() {
               />
             )}
           </>
+        ) : activeTab === 'events' ? (
+          <div className="max-w-6xl mx-auto py-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <h1 className="text-4xl font-serif text-brand-slate italic mb-2">Homepage Events</h1>
+                <p className="text-brand-moss/60 font-light italic">Post upcoming events that appear publicly on the homepage.</p>
+              </div>
+              {editingEventId && (
+                <button
+                  onClick={resetEventForm}
+                  className="inline-flex items-center justify-center gap-2 border border-brand-sand text-brand-moss px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-brand-cream transition-all"
+                >
+                  <X size={13} />
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+
+            <div className="grid lg:grid-cols-[420px_1fr] gap-8">
+              <form onSubmit={handleSaveEvent} className="bg-white border border-brand-sand rounded-[2rem] p-8 shadow-sm space-y-5 h-fit">
+                <div className="flex items-center gap-3 pb-4 border-b border-brand-sand">
+                  <Calendar className="text-brand-terracotta" size={22} />
+                  <h2 className="text-2xl font-serif italic text-brand-slate">{editingEventId ? 'Edit Event' : 'Add Event'}</h2>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Title</label>
+                  <input
+                    value={eventForm.title}
+                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    placeholder="Spring Skin Reset Workshop"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Date</label>
+                    <input
+                      type="date"
+                      value={eventForm.date}
+                      onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                      className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Time</label>
+                    <input
+                      value={eventForm.time}
+                      onChange={(e) => setEventForm({ ...eventForm, time: e.target.value })}
+                      className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                      placeholder="6:00 PM"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Location</label>
+                  <input
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    placeholder="Virtual or Studio"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Short Description</label>
+                  <textarea
+                    value={eventForm.description}
+                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta min-h-[110px]"
+                    placeholder="A concise note about who it is for and what they can expect."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Image URL Optional</label>
+                  <input
+                    value={eventForm.imageUrl || ''}
+                    onChange={(e) => setEventForm({ ...eventForm, imageUrl: e.target.value })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={eventSaving}
+                  className="w-full bg-brand-moss text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-slate transition-all shadow-lg disabled:opacity-50"
+                >
+                  {eventSaving ? 'Saving...' : editingEventId ? 'Update Event' : 'Post Event'}
+                </button>
+              </form>
+
+              <div className="space-y-4">
+                {events.length > 0 ? events.map((event) => {
+                  const eventDate = new Date(`${event.date}T12:00:00`);
+                  const isPast = event.date < new Date().toISOString().slice(0, 10);
+                  return (
+                    <div key={event.id} className={cn(
+                      "bg-white border rounded-[2rem] p-6 shadow-sm flex flex-col md:flex-row gap-5",
+                      isPast ? "border-brand-sand opacity-60" : "border-brand-terracotta/30"
+                    )}>
+                      {event.imageUrl && (
+                        <div className="md:w-40 aspect-[16/10] rounded-xl overflow-hidden bg-brand-sand/20 shrink-0">
+                          <img src={event.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                      )}
+                      <div className="flex gap-4 flex-grow">
+                        <div className="w-16 h-16 rounded-xl bg-brand-terracotta text-white flex flex-col items-center justify-center shrink-0">
+                          <span className="text-[10px] uppercase tracking-widest font-bold">{eventDate.toLocaleDateString('en-US', { month: 'short' })}</span>
+                          <span className="text-2xl font-serif italic leading-none">{eventDate.getDate()}</span>
+                        </div>
+                        <div className="space-y-2 flex-grow min-w-0">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="text-2xl font-serif italic text-brand-slate">{event.title}</h3>
+                              <p className="text-[10px] uppercase tracking-widest font-bold text-brand-moss/60">{event.time} • {event.location}</p>
+                            </div>
+                            {isPast && (
+                              <span className="text-[8px] uppercase tracking-widest font-bold bg-brand-sand/30 text-brand-moss px-2 py-1 rounded-full">
+                                Hidden
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-brand-moss/70 font-light leading-relaxed">{event.description}</p>
+                          <div className="flex gap-2 pt-2">
+                            <button
+                              onClick={() => handleEditEvent(event)}
+                              className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-terracotta hover:text-brand-slate"
+                            >
+                              <Edit2 size={12} />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(event.id)}
+                              className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-sand hover:text-red-500"
+                            >
+                              <Trash2 size={12} />
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div className="bg-white border border-dashed border-brand-sand rounded-[2rem] p-12 text-center">
+                    <p className="text-brand-moss/50 font-serif italic text-xl">No events posted yet.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         ) : activeTab === 'team' ? (
           <div className="max-w-4xl mx-auto py-12">
             <h1 className="text-4xl font-serif text-brand-slate italic mb-2">Clinical Team</h1>

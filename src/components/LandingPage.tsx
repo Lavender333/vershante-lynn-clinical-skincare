@@ -1,9 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Brain, FlaskConical, Quote, ShieldCheck, Heart } from 'lucide-react';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { ArrowRight, Brain, Calendar, Clock, FlaskConical, MapPin, Quote, ShieldCheck, Heart } from 'lucide-react';
+import { db } from '../lib/firebase';
+import { EventPost } from '../types';
 
 export default function LandingPage() {
+  const [events, setEvents] = useState<EventPost[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'events'), orderBy('date', 'asc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const today = new Date().toISOString().slice(0, 10);
+      const upcoming = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }) as EventPost)
+        .filter((event) => event.date >= today);
+      setEvents(upcoming);
+    }, (error) => {
+      console.info('Unable to load upcoming events.', error);
+      setEvents([]);
+    });
+
+    return unsubscribe;
+  }, []);
+
   return (
     <div className="pt-20">
       {/* Hero Section */}
@@ -110,6 +131,64 @@ export default function LandingPage() {
               </p>
             </div>
           </div>
+        </div>
+      </motion.section>
+
+      {/* Upcoming Events */}
+      <motion.section
+        className="py-28 bg-brand-cream"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta">
+                <Calendar size={14} />
+                Upcoming
+              </div>
+              <h2 className="text-5xl font-serif text-brand-slate italic">Events</h2>
+            </div>
+          </div>
+
+          {events.length > 0 ? (
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {events.map((event) => {
+                const eventDate = new Date(`${event.date}T12:00:00`);
+                return (
+                  <article key={event.id} className="bg-white border border-brand-sand rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                    {event.imageUrl && (
+                      <div className="aspect-[16/9] overflow-hidden bg-brand-sand/20">
+                        <img src={event.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </div>
+                    )}
+                    <div className="p-6 space-y-5">
+                      <div className="flex gap-4">
+                        <div className="w-16 h-16 rounded-xl bg-brand-terracotta text-white flex flex-col items-center justify-center shrink-0">
+                          <span className="text-[10px] uppercase tracking-widest font-bold">{eventDate.toLocaleDateString('en-US', { month: 'short' })}</span>
+                          <span className="text-2xl font-serif italic leading-none">{eventDate.getDate()}</span>
+                        </div>
+                        <div className="space-y-2 min-w-0">
+                          <h3 className="text-2xl font-serif italic text-brand-slate leading-tight">{event.title}</h3>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] uppercase tracking-widest font-bold text-brand-moss/60">
+                            <span className="inline-flex items-center gap-1.5"><Clock size={12} /> {event.time}</span>
+                            <span className="inline-flex items-center gap-1.5"><MapPin size={12} /> {event.location}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-brand-moss/70 font-light leading-relaxed">{event.description}</p>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white border border-dashed border-brand-sand rounded-2xl p-10 text-center">
+              <p className="text-brand-moss/60 font-serif italic text-xl">No events scheduled right now — check back soon</p>
+            </div>
+          )}
         </div>
       </motion.section>
 

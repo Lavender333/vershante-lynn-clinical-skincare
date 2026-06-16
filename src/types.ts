@@ -9,6 +9,18 @@ export interface OperatingHours {
   };
 }
 
+export interface EventPost {
+  id?: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  imageUrl?: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
 export interface AssessmentData {
   id?: string; // Document ID (assigned by Firestore after creation)
   fullName: string;
