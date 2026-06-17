@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Send, Mail, MessageSquare, User, AlertCircle, CheckCircle2, FlaskConical } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-const CONTACT_EMAIL = 'intelligence@vershantelynn.com';
+const CONTACT_EMAIL = 'artbrowbeautycle@gmail.com';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
