@@ -11,6 +11,7 @@ export interface OperatingHours {
 
 export interface EventPost {
   id?: string;
+  storage?: 'events' | 'assessments';
   title: string;
   date: string;
   time: string;
@@ -131,6 +132,12 @@ export interface AssessmentData {
   contactMessage?: string;
   messageStatus?: 'new' | 'contacted' | 'follow-up';
   followUpNote?: string;
+  eventTitle?: string;
+  eventDate?: string;
+  eventTime?: string;
+  eventLocation?: string;
+  eventDescription?: string;
+  eventImageUrl?: string;
 }
 
 export interface ConsultationSlot {

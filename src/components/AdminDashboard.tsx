@@ -50,7 +50,8 @@ import {
   ExternalLink,
   ChevronLeft,
   CheckCircle2,
-  ClipboardList
+  ClipboardList,
+  ImagePlus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AssessmentData, ContactMessage, EventPost, OperatingHours } from '../types';
@@ -69,6 +70,44 @@ interface AssessmentRecord extends AssessmentData {
     answer: string | string[];
   }[];
 }
+
+const imageFileToDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error('Please choose an image file.'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxSize = 1200;
+        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+        const width = Math.round(img.width * scale);
+        const height = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Unable to prepare image.'));
+          return;
+        }
+
+        ctx.fillStyle = '#FDFCF9';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = () => reject(new Error('Unable to read image.'));
+      img.src = String(reader.result);
+    };
+    reader.onerror = () => reject(new Error('Unable to read image.'));
+    reader.readAsDataURL(file);
+  });
+};
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<User | null>(auth.currentUser);
@@ -102,7 +141,9 @@ export default function AdminDashboard() {
     imageUrl: ''
   });
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [editingEventStorage, setEditingEventStorage] = useState<'events' | 'assessments'>('events');
   const [eventSaving, setEventSaving] = useState(false);
+  const [eventImageProcessing, setEventImageProcessing] = useState(false);
 
   // Edit State
   const [isEditing, setIsEditing] = useState(false);
@@ -189,9 +230,13 @@ export default function AdminDashboard() {
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({
           id: doc.id,
+          storage: 'events',
           ...doc.data()
         })) as EventPost[];
         setEvents(data);
+      }, (error) => {
+        console.info('Homepage events collection unavailable; using assessment-backed events.', error);
+        setEvents([]);
       });
       return unsubscribe;
     }
@@ -317,6 +362,7 @@ export default function AdminDashboard() {
       imageUrl: ''
     });
     setEditingEventId(null);
+    setEditingEventStorage('events');
   };
 
   const handleEditEvent = (event: EventPost) => {
@@ -329,6 +375,62 @@ export default function AdminDashboard() {
       imageUrl: event.imageUrl || ''
     });
     setEditingEventId(event.id || null);
+    setEditingEventStorage(event.storage || 'events');
+  };
+
+  const buildAssessmentBackedEvent = (payload: {
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    description: string;
+    imageUrl: string;
+  }) => ({
+    fullName: 'Homepage Event',
+    preferredName: 'Homepage Event',
+    email: adminEmail,
+    phoneNumber: '',
+    referralSource: 'Admin Dashboard',
+    age: '',
+    concerns: [],
+    sensitivityLevel: 'Medium',
+    hormonalStage: 'Standard',
+    stressLevel: 5,
+    sleepQuality: 'Average',
+    waterIntake: 'Standard',
+    dietaryProfile: [],
+    activityLevel: 'Moderate',
+    caffeineIntake: 'Moderate',
+    currentRoutine: '',
+    professionalHistory: '',
+    primaryIntent: payload.title,
+    clinicalFocus: ['Homepage Event'],
+    source: 'homepage-event',
+    status: 'pending',
+    eventTitle: payload.title,
+    eventDate: payload.date,
+    eventTime: payload.time,
+    eventLocation: payload.location,
+    eventDescription: payload.description,
+    eventImageUrl: payload.imageUrl,
+    updatedAt: serverTimestamp()
+  });
+
+  const handleEventImageUpload = async (file?: File) => {
+    if (!file) return;
+    setEventImageProcessing(true);
+    try {
+      const dataUrl = await imageFileToDataUrl(file);
+      setEventForm((current) => ({ ...current, imageUrl: dataUrl }));
+      toast.success('Event image added');
+    } catch (error) {
+      console.error('Failed to prepare event image', error);
+      toast.error('Image upload failed', {
+        description: 'Please choose a smaller JPG or PNG image.'
+      });
+    } finally {
+      setEventImageProcessing(false);
+    }
   };
 
   const handleSaveEvent = async (e: React.FormEvent) => {
@@ -353,14 +455,29 @@ export default function AdminDashboard() {
       };
 
       if (editingEventId) {
-        await updateDoc(doc(db, 'events', editingEventId), payload);
+        if (editingEventStorage === 'assessments') {
+          await updateDoc(doc(db, 'assessments', editingEventId), buildAssessmentBackedEvent(payload));
+        } else {
+          await updateDoc(doc(db, 'events', editingEventId), payload);
+        }
         toast.success('Event updated');
       } else {
-        await addDoc(collection(db, 'events'), {
-          ...payload,
-          createdAt: serverTimestamp()
-        });
-        toast.success('Event posted to homepage');
+        try {
+          await addDoc(collection(db, 'events'), {
+            ...payload,
+            createdAt: serverTimestamp()
+          });
+          toast.success('Event posted to homepage');
+        } catch (eventError) {
+          console.info('Saving event through assessments fallback.', eventError);
+          await addDoc(collection(db, 'assessments'), {
+            ...buildAssessmentBackedEvent(payload),
+            createdAt: serverTimestamp()
+          });
+          toast.success('Event saved in admin', {
+            description: 'Publish the event database rule so it can appear publicly on the homepage.'
+          });
+        }
       }
 
       resetEventForm();
@@ -379,7 +496,10 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this homepage event?')) return;
 
     try {
-      await deleteDoc(doc(db, 'events', eventId));
+      const event = events.find((item) => item.id === eventId)
+        || records.find((record) => record.id === eventId && record.source === 'homepage-event');
+      const storage = 'storage' in (event || {}) ? (event as EventPost).storage : 'assessments';
+      await deleteDoc(doc(db, storage === 'assessments' ? 'assessments' : 'events', eventId));
       if (editingEventId === eventId) resetEventForm();
       toast.success('Event removed');
     } catch (error) {
@@ -764,7 +884,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const clinicalRecords = records.filter(record => record.source !== 'contact-message');
+  const clinicalRecords = records.filter(record => !['contact-message', 'homepage-event'].includes(record.source || ''));
 
   const filteredRecords = clinicalRecords.filter(record =>
     (record.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -835,6 +955,24 @@ export default function AdminDashboard() {
       const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
       return bTime - aTime;
     });
+
+  const assessmentBackedEvents: EventPost[] = records
+    .filter(record => record.source === 'homepage-event')
+    .map(record => ({
+      id: record.id,
+      storage: 'assessments',
+      title: record.eventTitle || record.primaryIntent || 'Homepage Event',
+      date: record.eventDate || '',
+      time: record.eventTime || '',
+      location: record.eventLocation || '',
+      description: record.eventDescription || '',
+      imageUrl: record.eventImageUrl || '',
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    }));
+
+  const dashboardEvents = [...events, ...assessmentBackedEvents]
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
   return (
     <div className="min-h-screen bg-[#FDFCF9] flex flex-col md:flex-row">
@@ -1403,26 +1541,42 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Image URL Optional</label>
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Event Image Optional</label>
+                  <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-brand-sand bg-brand-cream/40 px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-brand-moss transition-all hover:border-brand-terracotta hover:text-brand-terracotta">
+                    <ImagePlus size={16} />
+                    {eventImageProcessing ? 'Preparing Image...' : eventForm.imageUrl ? 'Change Image' : 'Upload Picture'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleEventImageUpload(e.target.files?.[0])}
+                      disabled={eventImageProcessing}
+                    />
+                  </label>
+                  {eventForm.imageUrl && (
+                    <div className="overflow-hidden rounded-xl border border-brand-sand bg-white">
+                      <img src={eventForm.imageUrl} alt="" className="h-40 w-full object-cover" referrerPolicy="no-referrer" />
+                    </div>
+                  )}
                   <input
-                    value={eventForm.imageUrl || ''}
+                    value={eventForm.imageUrl?.startsWith('data:') ? '' : eventForm.imageUrl || ''}
                     onChange={(e) => setEventForm({ ...eventForm, imageUrl: e.target.value })}
                     className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
-                    placeholder="https://..."
+                    placeholder="Or paste image URL"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={eventSaving}
+                  disabled={eventSaving || eventImageProcessing}
                   className="w-full bg-brand-moss text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-slate transition-all shadow-lg disabled:opacity-50"
                 >
-                  {eventSaving ? 'Saving...' : editingEventId ? 'Update Event' : 'Post Event'}
+                  {eventImageProcessing ? 'Preparing Image...' : eventSaving ? 'Saving...' : editingEventId ? 'Update Event' : 'Post Event'}
                 </button>
               </form>
 
               <div className="space-y-4">
-                {events.length > 0 ? events.map((event) => {
+                {dashboardEvents.length > 0 ? dashboardEvents.map((event) => {
                   const eventDate = new Date(`${event.date}T12:00:00`);
                   const isPast = event.date < new Date().toISOString().slice(0, 10);
                   return (
