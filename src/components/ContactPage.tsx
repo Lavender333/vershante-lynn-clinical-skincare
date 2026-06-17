@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Send, Mail, MessageSquare, User, AlertCircle, CheckCircle2, FlaskConical } from 'lucide-react';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { cn } from '../lib/utils';
 
 const CONTACT_EMAIL = 'artbrowbeautycle@gmail.com';
@@ -21,17 +23,22 @@ export default function ContactPage() {
     setErrorMessage('');
 
     try {
-      const subject = encodeURIComponent(formData.subject);
-      const body = encodeURIComponent(
-        `Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`
-      );
-
-      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+      await addDoc(collection(db, 'contactMessages'), {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim(),
+        status: 'new',
+        followUpNote: '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
+      console.error('Contact message save failed:', error);
       setStatus('error');
-      setErrorMessage(`Unable to open your email app. Please email ${CONTACT_EMAIL} directly.`);
+      setErrorMessage(`Unable to save your message. Please email ${CONTACT_EMAIL} directly.`);
     }
   };
 
@@ -122,9 +129,9 @@ export default function ContactPage() {
                 <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6 scale-animation">
                   <CheckCircle2 size={40} />
                 </div>
-                <h3 className="text-3xl font-serif italic text-brand-slate mb-4">Message Draft Opened</h3>
+                <h3 className="text-3xl font-serif italic text-brand-slate mb-4">Message Received</h3>
                 <p className="text-brand-moss/60 font-light italic leading-relaxed mb-8">
-                  "Your email app should now be open with your message prepared for our clinical team."
+                  "Your inquiry has been added to the professional dashboard for review and follow-up."
                 </p>
                 <button 
                   onClick={() => setStatus('idle')}

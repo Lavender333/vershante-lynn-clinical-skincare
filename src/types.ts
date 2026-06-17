@@ -21,6 +21,18 @@ export interface EventPost {
   updatedAt?: any;
 }
 
+export interface ContactMessage {
+  id?: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'new' | 'contacted' | 'follow-up';
+  followUpNote?: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
 export interface AssessmentData {
   id?: string; // Document ID (assigned by Firestore after creation)
   fullName: string;

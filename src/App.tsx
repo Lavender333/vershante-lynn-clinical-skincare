@@ -8,7 +8,7 @@ import PhilosophyPage from './components/PhilosophyPage';
 import ContactPage from './components/ContactPage';
 import AdminDashboard from './components/AdminDashboard';
 import ClientDashboard from './components/ClientDashboard';
-import { Instagram, Mail, Phone, MapPin, Lock } from 'lucide-react';
+import { MapPin, Lock } from 'lucide-react';
 
 function Footer() {
   return (
@@ -33,14 +33,6 @@ function Footer() {
             <div className="text-[11px] italic text-brand-slate/60">
               <div>We don't guess. We assess.</div>
             </div>
-          </div>
-          <div className="flex gap-4">
-            <a href="#" className="w-8 h-8 rounded-full bg-brand-moss/10 flex items-center justify-center text-brand-moss hover:bg-brand-moss hover:text-white transition-all">
-              <Instagram size={14} />
-            </a>
-            <a href="#" className="w-8 h-8 rounded-full bg-brand-moss/10 flex items-center justify-center text-brand-moss hover:bg-brand-moss hover:text-white transition-all">
-              <Mail size={14} />
-            </a>
           </div>
         </div>
 
@@ -71,10 +63,6 @@ function Footer() {
             <div className="flex gap-3">
               <MapPin size={16} className="text-brand-terracotta shrink-0" />
               <span>By Appointment Only<br />Virtual & In-Person</span>
-            </div>
-            <div className="flex gap-3">
-              <Phone size={16} className="text-brand-terracotta shrink-0" />
-              <span>888.SKIN.INTEL</span>
             </div>
           </div>
         </div>

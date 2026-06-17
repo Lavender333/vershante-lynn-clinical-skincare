@@ -54,7 +54,7 @@ import {
   ClipboardList
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AssessmentData, EventPost, OperatingHours } from '../types';
+import { AssessmentData, ContactMessage, EventPost, OperatingHours } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isSameMonth } from 'date-fns';
@@ -76,6 +76,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(!auth.currentUser);
   const [records, setRecords] = useState<AssessmentRecord[]>([]);
   const [events, setEvents] = useState<EventPost[]>([]);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AssessmentRecord | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -83,7 +84,7 @@ export default function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAdminState, setIsAdminState] = useState(false);
-  const [activeTab, setActiveTab] = useState<'assessments' | 'clients' | 'events' | 'team' | 'settings'>('assessments');
+  const [activeTab, setActiveTab] = useState<'assessments' | 'clients' | 'messages' | 'events' | 'team' | 'settings'>('assessments');
   const [activeSubTab, setActiveSubTab] = useState<'list' | 'calendar'>('list');
   const [adminsList, setAdminsList] = useState<{id: string, email: string}[]>([]);
   const [operatingHours, setOperatingHours] = useState<OperatingHours | null>(null);
@@ -192,6 +193,20 @@ export default function AdminDashboard() {
           ...doc.data()
         })) as EventPost[];
         setEvents(data);
+      });
+      return unsubscribe;
+    }
+  }, [user, isAdminState]);
+
+  useEffect(() => {
+    if (user && isAdminState) {
+      const q = query(collection(db, 'contactMessages'), orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as ContactMessage[];
+        setMessages(data);
       });
       return unsubscribe;
     }
@@ -367,6 +382,32 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Failed to delete event', error);
       toast.error('Unable to remove event');
+    }
+  };
+
+  const updateContactMessage = async (messageId: string, updates: Partial<ContactMessage>) => {
+    try {
+      await updateDoc(doc(db, 'contactMessages', messageId), {
+        ...updates,
+        updatedAt: serverTimestamp()
+      });
+      toast.success('Message updated');
+    } catch (error) {
+      console.error('Failed to update message', error);
+      toast.error('Unable to update message');
+    }
+  };
+
+  const deleteContactMessage = async (messageId?: string) => {
+    if (!messageId) return;
+    if (!window.confirm('Delete this contact message?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'contactMessages', messageId));
+      toast.success('Message deleted');
+    } catch (error) {
+      console.error('Failed to delete message', error);
+      toast.error('Unable to delete message');
     }
   };
 
@@ -837,6 +878,16 @@ export default function AdminDashboard() {
                   Clients
               </button>
               <button
+                onClick={() => setActiveTab('messages')}
+                className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-widest",
+                    activeTab === 'messages' ? "bg-white/10 text-brand-terracotta" : "text-white/60 hover:bg-white/5"
+                )}
+              >
+                  <MessageSquare size={14} />
+                  Messages
+              </button>
+              <button
                 onClick={() => setActiveTab('events')}
                 className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-widest",
@@ -876,9 +927,9 @@ export default function AdminDashboard() {
             </div>
             <div className="bg-white/5 p-4 rounded-2xl text-center">
               <p className="text-2xl font-serif italic text-brand-terracotta">
-                {records.filter(r => r.status === 'scheduled').length}
+                {messages.filter(message => message.status === 'new').length}
               </p>
-              <p className="text-[8px] uppercase tracking-[0.2em] font-bold text-white/40">Scheduled</p>
+              <p className="text-[8px] uppercase tracking-[0.2em] font-bold text-white/40">New Msgs</p>
             </div>
           </div>
         </nav>
@@ -1165,6 +1216,112 @@ export default function AdminDashboard() {
             ) : (
               <div className="bg-white border border-dashed border-brand-sand rounded-[2rem] p-12 text-center">
                 <p className="text-brand-moss/50 font-serif italic text-xl">No clients match this search.</p>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'messages' ? (
+          <div className="max-w-6xl mx-auto py-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <h1 className="text-4xl font-serif text-brand-slate italic mb-2">Contact Messages</h1>
+                <p className="text-brand-moss/60 font-light italic">
+                  Review Connect With The Edge inquiries, track follow-up, and mark clients as contacted.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-3 w-full md:w-auto">
+                <div className="bg-white border border-brand-sand rounded-2xl px-5 py-4 text-center">
+                  <p className="text-2xl font-serif italic text-brand-slate">{messages.length}</p>
+                  <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">Total</p>
+                </div>
+                <div className="bg-white border border-brand-sand rounded-2xl px-5 py-4 text-center">
+                  <p className="text-2xl font-serif italic text-brand-slate">{messages.filter(message => message.status === 'new').length}</p>
+                  <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">New</p>
+                </div>
+                <div className="bg-white border border-brand-sand rounded-2xl px-5 py-4 text-center">
+                  <p className="text-2xl font-serif italic text-brand-slate">{messages.filter(message => message.status === 'follow-up').length}</p>
+                  <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">Follow-Up</p>
+                </div>
+              </div>
+            </div>
+
+            {messages.length > 0 ? (
+              <div className="space-y-5">
+                {messages.map((message) => (
+                  <article key={message.id} className="bg-white border border-brand-sand rounded-[2rem] p-6 shadow-sm">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                      <div className="space-y-4 flex-grow min-w-0">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className={cn(
+                            "text-[8px] uppercase tracking-widest font-bold px-3 py-1 rounded-full",
+                            message.status === 'new' && "bg-brand-terracotta text-white",
+                            message.status === 'contacted' && "bg-brand-moss text-white",
+                            message.status === 'follow-up' && "bg-brand-sand text-brand-moss"
+                          )}>
+                            {message.status === 'follow-up' ? 'follow up' : message.status}
+                          </span>
+                          <p className="text-[10px] uppercase tracking-widest font-bold text-brand-moss/40">
+                            {message.createdAt?.toDate ? format(message.createdAt.toDate(), 'MMM d, yyyy h:mm a') : 'Recent'}
+                          </p>
+                        </div>
+
+                        <div>
+                          <h2 className="text-2xl font-serif italic text-brand-slate">{message.subject}</h2>
+                          <p className="text-sm text-brand-moss/70">
+                            {message.name} · <a href={`mailto:${message.email}`} className="text-brand-terracotta hover:text-brand-slate transition-colors">{message.email}</a>
+                          </p>
+                        </div>
+
+                        <p className="text-sm text-brand-slate/80 leading-relaxed bg-brand-cream/60 border border-brand-sand/60 rounded-2xl p-5 whitespace-pre-wrap">
+                          {message.message}
+                        </p>
+                      </div>
+
+                      <div className="lg:w-72 space-y-4 shrink-0">
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => updateContactMessage(message.id!, { status: 'contacted' })}
+                            className="bg-brand-moss text-white py-3 rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-brand-slate transition-all"
+                          >
+                            Contacted
+                          </button>
+                          <button
+                            onClick={() => updateContactMessage(message.id!, { status: 'follow-up' })}
+                            className="bg-brand-sand/40 text-brand-moss py-3 rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-brand-sand transition-all"
+                          >
+                            Follow Up
+                          </button>
+                        </div>
+
+                        <textarea
+                          defaultValue={message.followUpNote || ''}
+                          onBlur={(event) => updateContactMessage(message.id!, { followUpNote: event.target.value })}
+                          placeholder="Add follow-up notes..."
+                          className="w-full bg-brand-cream/60 border border-brand-sand rounded-2xl p-4 text-xs outline-none focus:border-brand-terracotta min-h-[110px]"
+                        />
+
+                        <div className="flex gap-2">
+                          <a
+                            href={`mailto:${message.email}?subject=${encodeURIComponent(`Re: ${message.subject}`)}`}
+                            className="flex-grow inline-flex items-center justify-center gap-2 bg-brand-slate text-white py-3 rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-brand-moss transition-all"
+                          >
+                            <Mail size={12} />
+                            Email
+                          </a>
+                          <button
+                            onClick={() => deleteContactMessage(message.id)}
+                            className="px-4 py-3 rounded-xl border border-red-100 text-red-500 hover:bg-red-50 transition-all"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white border border-dashed border-brand-sand rounded-[2rem] p-12 text-center">
+                <p className="text-brand-moss/50 font-serif italic text-xl">No contact messages yet.</p>
               </div>
             )}
           </div>
