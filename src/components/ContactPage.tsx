@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { Send, Mail, MessageSquare, User, AlertCircle, CheckCircle2, FlaskConical } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+const CONTACT_EMAIL = 'intelligence@vershantelynn.com';
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -19,26 +21,17 @@ export default function ContactPage() {
     setErrorMessage('');
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const subject = encodeURIComponent(formData.subject);
+      const body = encodeURIComponent(
+        `Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`
+      );
 
-      const result = await response.json();
-
-      if (result.success) {
-        setStatus('success');
-        setFormData({ name: '', email: '', subject: '', message: '' });
-      } else {
-        setStatus('error');
-        setErrorMessage(result.error || 'Failed to send message. Please try again.');
-      }
+      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+      setStatus('success');
+      setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
       setStatus('error');
-      setErrorMessage('A network error occurred. Please try again later.');
+      setErrorMessage(`Unable to open your email app. Please email ${CONTACT_EMAIL} directly.`);
     }
   };
 
@@ -83,13 +76,13 @@ export default function ContactPage() {
             <div>
               <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-6">Contact Channels</h3>
               <div className="space-y-6">
-                <a href="mailto:intelligence@vershantelynn.com" className="group flex items-center gap-4 bg-white p-6 rounded-2xl border border-brand-sand hover:border-brand-moss/30 transition-all shadow-sm">
+                <a href={`mailto:${CONTACT_EMAIL}`} className="group flex items-center gap-4 bg-white p-6 rounded-2xl border border-brand-sand hover:border-brand-moss/30 transition-all shadow-sm">
                   <div className="w-10 h-10 bg-brand-sand/20 rounded-xl flex items-center justify-center text-brand-moss group-hover:bg-brand-moss group-hover:text-white transition-all">
                     <Mail size={18} />
                   </div>
                   <div>
                     <p className="text-[8px] uppercase tracking-widest text-brand-sand font-bold mb-1">Email Protocol</p>
-                    <p className="text-sm font-bold text-brand-slate">intelligence@vershantelynn.com</p>
+                    <p className="text-sm font-bold text-brand-slate">{CONTACT_EMAIL}</p>
                   </div>
                 </a>
               </div>
@@ -129,9 +122,9 @@ export default function ContactPage() {
                 <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6 scale-animation">
                   <CheckCircle2 size={40} />
                 </div>
-                <h3 className="text-3xl font-serif italic text-brand-slate mb-4">Transmission Successful</h3>
+                <h3 className="text-3xl font-serif italic text-brand-slate mb-4">Message Draft Opened</h3>
                 <p className="text-brand-moss/60 font-light italic leading-relaxed mb-8">
-                  "Your inquiry has been synchronized with our clinical team. We will respond within 24–48 biological hours."
+                  "Your email app should now be open with your message prepared for our clinical team."
                 </p>
                 <button 
                   onClick={() => setStatus('idle')}
