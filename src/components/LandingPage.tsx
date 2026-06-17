@@ -6,6 +6,8 @@ import { ArrowRight, Brain, Calendar, Clock, FlaskConical, MapPin, Quote, Shield
 import { db } from '../lib/firebase';
 import { EventPost } from '../types';
 
+const imagePath = (fileName: string) => `${import.meta.env.BASE_URL}images/${fileName}`;
+
 export default function LandingPage() {
   const [events, setEvents] = useState<EventPost[]>([]);
 
@@ -71,10 +73,9 @@ export default function LandingPage() {
           >
             <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl relative">
               <img 
-                src="https://images.unsplash.com/photo-1596755094514-f87034a7ad45?auto=format&fit=crop&q=80&w=800" 
-                alt="Vershante Lynn" 
+                src={imagePath('vershante-treatment.jpg')}
+                alt="Vershanté Lynn performing a clinical skincare treatment"
                 className="w-full h-full object-cover filter contrast-[1.05] brightness-[1.02]"
-                referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-brand-moss/5" />
             </div>
@@ -226,12 +227,20 @@ export default function LandingPage() {
           <div className="order-2 md:order-1 relative">
               <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4">
-                <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71af?auto=format&fit=crop&q=80&w=400" alt="Melanin Intelligence" className="rounded-3xl shadow-lg border border-brand-sand/20" />
+                <img
+                  src={imagePath('vershante-education-room.jpg')}
+                  alt="Vershanté Lynn teaching a professional skincare education session"
+                  className="rounded-3xl shadow-lg border border-brand-sand/20 aspect-[3/4] object-cover"
+                />
                 <div className="bg-brand-sand h-32 rounded-3xl eclectic-print" />
               </div>
               <div className="pt-12 space-y-4">
                 <div className="bg-brand-moss/10 h-32 rounded-3xl" />
-                <img src="https://images.unsplash.com/photo-1523450031158-4af9859f13dd?auto=format&fit=crop&q=80&w=400" alt="Diverse Clinical Focus" className="rounded-3xl shadow-lg border border-brand-sand/20" />
+                <img
+                  src={imagePath('vershante-black-spa-expo.jpg')}
+                  alt="Vershanté Lynn speaking at the Black Spa Expo"
+                  className="rounded-3xl shadow-lg border border-brand-sand/20 aspect-[3/4] object-cover"
+                />
               </div>
             </div>
           </div>
