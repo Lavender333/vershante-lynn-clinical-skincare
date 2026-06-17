@@ -8,20 +8,24 @@ import PhilosophyPage from './components/PhilosophyPage';
 import ContactPage from './components/ContactPage';
 import AdminDashboard from './components/AdminDashboard';
 import ClientDashboard from './components/ClientDashboard';
-import { FlaskConical, Instagram, Mail, Phone, MapPin, Lock } from 'lucide-react';
+import { Instagram, Mail, Phone, MapPin, Lock } from 'lucide-react';
 
 function Footer() {
   return (
     <footer className="bg-brand-sand/20 border-t border-brand-sand pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-16">
         <div className="space-y-6">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-brand-moss rounded-xl flex items-center justify-center text-white">
-              <FlaskConical size={20} />
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-16 h-16 rounded-2xl bg-white border border-brand-sand/60 shadow-sm overflow-hidden flex items-center justify-center">
+              <img
+                src={`${import.meta.env.BASE_URL}images/vershante-lynn-logo.png`}
+                alt="Vershanté Lynn Aesthetics"
+                className="w-full h-full object-contain p-2"
+              />
             </div>
             <div className="flex flex-col -gap-1">
               <span className="font-serif italic text-xl text-brand-slate leading-none">Vershante Lynn</span>
-              <span className="text-[10px] uppercase tracking-[0.3em] text-brand-moss font-bold">Skin Intelligence</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] text-brand-moss font-bold">Aesthetics</span>
             </div>
           </Link>
           <div className="space-y-2">
@@ -54,9 +58,10 @@ function Footer() {
         <div className="space-y-6">
           <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-slate">Clinical Focus</h4>
           <ul className="space-y-4 text-sm text-brand-moss/80 font-light">
-            <li>Postpartum Skincare</li>
-            <li>Menopause Intelligence</li>
-            <li>Hyperpigmentation Patterns</li>
+            <li>Pigment & Uneven Tone</li>
+            <li>Sensitivity & Barrier Disruption</li>
+            <li>Congestion & Texture</li>
+            <li>Aging, Dullness & Skin Changes</li>
           </ul>
         </div>
 
