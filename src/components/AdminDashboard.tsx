@@ -40,7 +40,6 @@ import {
   Eye,
   EyeOff,
   Edit2,
-  Bell,
   Save,
   X,
   Search,
@@ -570,8 +569,8 @@ export default function AdminDashboard() {
       setSelectedRecord(updated);
       setIsEditing(false);
 
-      toast.success("Protocol Updated", {
-        description: `Clinical record updated. Local notification triggered for ${selectedRecord.email}.`
+      toast.success("Appointment Updated", {
+        description: `The calendar record was updated for ${selectedRecord.fullName}.`
       });
     } catch (error) {
       console.error("Failed to update appointment", error);
@@ -601,24 +600,11 @@ export default function AdminDashboard() {
         status: 'scheduled'
       };
       setSelectedRecord(updated);
-      
-      // Trigger actual email notification
-      try {
-        await fetch('/api/send-appointment-update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: selectedRecord.email,
-            fullName: selectedRecord.fullName,
-            bookingDetails: newSlot,
-            type: 'update'
-          })
-        });
-        console.log("Clinical update protocol dispatched successfully.");
-      } catch (emailErr) {
-        console.error("Communication failure at gateway:", emailErr);
-      }
-      
+
+      toast.success("Appointment Rescheduled", {
+        description: `The calendar record was updated for ${selectedRecord.fullName}.`
+      });
+
       setNotifying(false);
       setIsRescheduling(false);
       
@@ -655,30 +641,6 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
-  const sendManualReminder = async () => {
-    if (!selectedRecord || !selectedRecord.consultationSlot) return;
-    setNotifying(true);
-    try {
-      await fetch('/api/send-appointment-update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: selectedRecord.email,
-          fullName: selectedRecord.fullName,
-          bookingDetails: selectedRecord.consultationSlot,
-          type: 'reminder'
-        })
-      });
-      toast.success("Reminder Dispatched", {
-        description: `Clinical reminder successfully sent to ${selectedRecord.email}.`
-      });
-    } catch (error) {
-      console.error("Reminder failed", error);
-    } finally {
-      setNotifying(false);
-    }
-  };
-
   if (loading) {
     return null;
   }
@@ -1789,14 +1751,6 @@ export default function AdminDashboard() {
                         >
                           <Edit2 size={14} />
                         </button>
-                        <button 
-                          onClick={sendManualReminder}
-                          disabled={notifying}
-                          className="p-2 hover:bg-brand-moss/10 rounded-full text-brand-terracotta transition-all disabled:opacity-30"
-                          title="Send Clinical Reminder"
-                        >
-                          <Bell size={14} className={cn(notifying && "animate-bounce")} />
-                        </button>
                       </div>
                     )}
                   </div>
@@ -2181,7 +2135,7 @@ export default function AdminDashboard() {
                   {notifying && (
                     <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-[3rem]">
                       <div className="w-16 h-16 border-4 border-brand-terracotta border-t-transparent rounded-full animate-spin mb-4" />
-                      <p className="text-brand-slate font-serif italic text-lg">Synchronizing clinical notification...</p>
+                      <p className="text-brand-slate font-serif italic text-lg">Updating calendar appointment...</p>
                     </div>
                   )}
                   <BookingCalendar 

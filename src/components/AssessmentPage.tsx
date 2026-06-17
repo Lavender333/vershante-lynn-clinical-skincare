@@ -16,7 +16,6 @@ import BiologicalFlowChart from '../components/BiologicalFlowChart';
 import PrintableSummary from '../components/PrintableSummary';
 
 type FlowStep = 'assessment' | 'booking' | 'success';
-const CONFIRMATION_API_URL = import.meta.env.VITE_CONFIRMATION_API_URL || '';
 
 export default function AssessmentPage() {
   const [searchParams] = useSearchParams();
@@ -129,45 +128,6 @@ export default function AssessmentPage() {
       }
       setSelectedSlot(slot);
       setFlowStep('success');
-
-      // Trigger confirmation email only when a hosted API endpoint is configured.
-      if (data && CONFIRMATION_API_URL) {
-        try {
-          const response = await fetch(CONFIRMATION_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: data.email,
-              fullName: data.fullName,
-              bookingDetails: {
-                date: new Date(slot.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-                time: slot.time,
-                type: slot.type
-              },
-              insightsSummary: data.clinicalInsights,
-              clinicalFocus: data.clinicalFocus,
-              summaryData: data
-            })
-          });
-          const result = await response.json();
-          if (!result.success) {
-            console.error("Clinical notification failed:", result.error);
-            toast.info("Consultation Confirmed", {
-              description: "Your appointment is saved. Email confirmation can be sent separately if needed."
-            });
-          } else {
-            console.log("Clinical confirmation protocol dispatched successfully.");
-            toast.success("Consultation Confirmed", {
-              description: `Confirmation sent to ${data.email}.`
-            });
-          }
-        } catch (emailErr) {
-          console.info("Confirmation email skipped after booking save.", emailErr);
-          toast.info("Consultation Confirmed", {
-            description: "Your appointment is saved. Email confirmation can be sent separately if needed."
-          });
-        }
-      }
     } catch (error: any) {
       console.error('Booking error:', error);
       const info = (() => { try { return JSON.parse(error.message); } catch { return null; } })();
@@ -545,7 +505,7 @@ export default function AssessmentPage() {
                       Secure your Clinical intelligence
                     </h4>
                     <p className="text-[11px] text-brand-moss/60 font-light leading-relaxed max-w-md mx-auto">
-                      Log in to save this protocol to your patient dashboard and access your diagnostic history, session reminders, and clinical updates at any time.
+                      Log in to save this protocol to your patient dashboard and access your diagnostic history, appointment details, and clinical updates at any time.
                     </p>
                     <button 
                       onClick={signIn}
