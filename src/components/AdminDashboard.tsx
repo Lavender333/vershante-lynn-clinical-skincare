@@ -203,9 +203,13 @@ export default function AdminDashboard() {
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({
           id: doc.id,
+          storage: 'contactMessages',
           ...doc.data()
         })) as ContactMessage[];
         setMessages(data);
+      }, (error) => {
+        console.info('Contact message collection unavailable; using assessment-backed messages.', error);
+        setMessages([]);
       });
       return unsubscribe;
     }
@@ -384,12 +388,23 @@ export default function AdminDashboard() {
     }
   };
 
-  const updateContactMessage = async (messageId: string, updates: Partial<ContactMessage>) => {
+  const updateContactMessage = async (message: ContactMessage, updates: Partial<ContactMessage>) => {
+    if (!message.id) return;
+
     try {
-      await updateDoc(doc(db, 'contactMessages', messageId), {
-        ...updates,
-        updatedAt: serverTimestamp()
-      });
+      if (message.storage === 'assessments') {
+        const assessmentUpdates: Record<string, any> = {
+          updatedAt: serverTimestamp()
+        };
+        if (updates.status) assessmentUpdates.messageStatus = updates.status;
+        if (updates.followUpNote !== undefined) assessmentUpdates.followUpNote = updates.followUpNote;
+        await updateDoc(doc(db, 'assessments', message.id), assessmentUpdates);
+      } else {
+        await updateDoc(doc(db, 'contactMessages', message.id), {
+          ...updates,
+          updatedAt: serverTimestamp()
+        });
+      }
       toast.success('Message updated');
     } catch (error) {
       console.error('Failed to update message', error);
@@ -397,12 +412,12 @@ export default function AdminDashboard() {
     }
   };
 
-  const deleteContactMessage = async (messageId?: string) => {
-    if (!messageId) return;
+  const deleteContactMessage = async (message: ContactMessage) => {
+    if (!message.id) return;
     if (!window.confirm('Delete this contact message?')) return;
 
     try {
-      await deleteDoc(doc(db, 'contactMessages', messageId));
+      await deleteDoc(doc(db, message.storage === 'assessments' ? 'assessments' : 'contactMessages', message.id));
       toast.success('Message deleted');
     } catch (error) {
       console.error('Failed to delete message', error);
@@ -749,7 +764,9 @@ export default function AdminDashboard() {
     );
   }
 
-  const filteredRecords = records.filter(record => 
+  const clinicalRecords = records.filter(record => record.source !== 'contact-message');
+
+  const filteredRecords = clinicalRecords.filter(record =>
     (record.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (record.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (record.phoneNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -796,6 +813,28 @@ export default function AdminDashboard() {
   const getRecordLabel = (record: AssessmentRecord) => (
     record.source === 'free-screening' ? 'Free Screening' : 'Skin Intelligence Assessment'
   );
+
+  const assessmentBackedMessages: ContactMessage[] = records
+    .filter(record => record.source === 'contact-message')
+    .map(record => ({
+      id: record.id,
+      storage: 'assessments',
+      name: record.fullName || 'Contact Inquiry',
+      email: record.email || '',
+      subject: record.contactSubject || record.primaryIntent || 'Website inquiry',
+      message: record.contactMessage || '',
+      status: record.messageStatus || 'new',
+      followUpNote: record.followUpNote || '',
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    }));
+
+  const dashboardMessages = [...messages, ...assessmentBackedMessages]
+    .sort((a, b) => {
+      const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+      const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+      return bTime - aTime;
+    });
 
   return (
     <div className="min-h-screen bg-[#FDFCF9] flex flex-col md:flex-row">
@@ -884,12 +923,12 @@ export default function AdminDashboard() {
           <div className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-4 px-4">Metric Overview</div>
           <div className="grid grid-cols-2 gap-2 px-2">
             <div className="bg-white/5 p-4 rounded-2xl text-center">
-              <p className="text-2xl font-serif italic text-brand-terracotta">{records.length}</p>
+              <p className="text-2xl font-serif italic text-brand-terracotta">{clinicalRecords.length}</p>
               <p className="text-[8px] uppercase tracking-[0.2em] font-bold text-white/40">Total Logs</p>
             </div>
             <div className="bg-white/5 p-4 rounded-2xl text-center">
               <p className="text-2xl font-serif italic text-brand-terracotta">
-                {messages.filter(message => message.status === 'new').length}
+                {dashboardMessages.filter(message => message.status === 'new').length}
               </p>
               <p className="text-[8px] uppercase tracking-[0.2em] font-bold text-white/40">New Msgs</p>
             </div>
@@ -1028,7 +1067,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <CalendarView 
-                records={records} 
+                records={clinicalRecords}
                 currentDate={currentCalendarDate} 
                 onPrev={() => setCurrentCalendarDate(subMonths(currentCalendarDate, 1))}
                 onNext={() => setCurrentCalendarDate(addMonths(currentCalendarDate, 1))}
@@ -1076,11 +1115,11 @@ export default function AdminDashboard() {
               </div>
               <div className="bg-white border border-brand-sand rounded-2xl p-6">
                 <p className="text-[9px] uppercase tracking-widest font-bold text-brand-moss/50 mb-2">Free Screenings</p>
-                <p className="text-4xl font-serif italic text-brand-slate">{records.filter(record => record.source === 'free-screening').length}</p>
+                <p className="text-4xl font-serif italic text-brand-slate">{clinicalRecords.filter(record => record.source === 'free-screening').length}</p>
               </div>
               <div className="bg-white border border-brand-sand rounded-2xl p-6">
                 <p className="text-[9px] uppercase tracking-widest font-bold text-brand-moss/50 mb-2">Booked Assessments</p>
-                <p className="text-4xl font-serif italic text-brand-slate">{records.filter(record => record.consultationSlot || record.status === 'scheduled').length}</p>
+                <p className="text-4xl font-serif italic text-brand-slate">{clinicalRecords.filter(record => record.consultationSlot || record.status === 'scheduled').length}</p>
               </div>
             </div>
 
@@ -1192,23 +1231,23 @@ export default function AdminDashboard() {
               </div>
               <div className="grid grid-cols-3 gap-3 w-full md:w-auto">
                 <div className="bg-white border border-brand-sand rounded-2xl px-5 py-4 text-center">
-                  <p className="text-2xl font-serif italic text-brand-slate">{messages.length}</p>
+                  <p className="text-2xl font-serif italic text-brand-slate">{dashboardMessages.length}</p>
                   <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">Total</p>
                 </div>
                 <div className="bg-white border border-brand-sand rounded-2xl px-5 py-4 text-center">
-                  <p className="text-2xl font-serif italic text-brand-slate">{messages.filter(message => message.status === 'new').length}</p>
+                  <p className="text-2xl font-serif italic text-brand-slate">{dashboardMessages.filter(message => message.status === 'new').length}</p>
                   <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">New</p>
                 </div>
                 <div className="bg-white border border-brand-sand rounded-2xl px-5 py-4 text-center">
-                  <p className="text-2xl font-serif italic text-brand-slate">{messages.filter(message => message.status === 'follow-up').length}</p>
+                  <p className="text-2xl font-serif italic text-brand-slate">{dashboardMessages.filter(message => message.status === 'follow-up').length}</p>
                   <p className="text-[8px] uppercase tracking-widest font-bold text-brand-moss/50">Follow-Up</p>
                 </div>
               </div>
             </div>
 
-            {messages.length > 0 ? (
+            {dashboardMessages.length > 0 ? (
               <div className="space-y-5">
-                {messages.map((message) => (
+                {dashboardMessages.map((message) => (
                   <article key={message.id} className="bg-white border border-brand-sand rounded-[2rem] p-6 shadow-sm">
                     <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                       <div className="space-y-4 flex-grow min-w-0">
@@ -1241,13 +1280,13 @@ export default function AdminDashboard() {
                       <div className="lg:w-72 space-y-4 shrink-0">
                         <div className="grid grid-cols-2 gap-2">
                           <button
-                            onClick={() => updateContactMessage(message.id!, { status: 'contacted' })}
+                            onClick={() => updateContactMessage(message, { status: 'contacted' })}
                             className="bg-brand-moss text-white py-3 rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-brand-slate transition-all"
                           >
                             Contacted
                           </button>
                           <button
-                            onClick={() => updateContactMessage(message.id!, { status: 'follow-up' })}
+                            onClick={() => updateContactMessage(message, { status: 'follow-up' })}
                             className="bg-brand-sand/40 text-brand-moss py-3 rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-brand-sand transition-all"
                           >
                             Follow Up
@@ -1256,7 +1295,7 @@ export default function AdminDashboard() {
 
                         <textarea
                           defaultValue={message.followUpNote || ''}
-                          onBlur={(event) => updateContactMessage(message.id!, { followUpNote: event.target.value })}
+                          onBlur={(event) => updateContactMessage(message, { followUpNote: event.target.value })}
                           placeholder="Add follow-up notes..."
                           className="w-full bg-brand-cream/60 border border-brand-sand rounded-2xl p-4 text-xs outline-none focus:border-brand-terracotta min-h-[110px]"
                         />
@@ -1270,7 +1309,7 @@ export default function AdminDashboard() {
                             Email
                           </a>
                           <button
-                            onClick={() => deleteContactMessage(message.id)}
+                            onClick={() => deleteContactMessage(message)}
                             className="px-4 py-3 rounded-xl border border-red-100 text-red-500 hover:bg-red-50 transition-all"
                           >
                             <Trash2 size={14} />

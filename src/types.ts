@@ -23,6 +23,7 @@ export interface EventPost {
 
 export interface ContactMessage {
   id?: string;
+  storage?: 'contactMessages' | 'assessments';
   name: string;
   email: string;
   subject: string;
@@ -126,6 +127,10 @@ export interface AssessmentData {
     provider: 'PocketSuite' | 'Internal';
     url: string;
   };
+  contactSubject?: string;
+  contactMessage?: string;
+  messageStatus?: 'new' | 'contacted' | 'follow-up';
+  followUpNote?: string;
 }
 
 export interface ConsultationSlot {

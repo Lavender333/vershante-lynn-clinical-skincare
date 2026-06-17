@@ -23,15 +23,33 @@ export default function ContactPage() {
     setErrorMessage('');
 
     try {
-      await addDoc(collection(db, 'contactMessages'), {
-        name: formData.name.trim(),
+      await addDoc(collection(db, 'assessments'), {
+        fullName: formData.name.trim(),
+        preferredName: formData.name.trim(),
         email: formData.email.trim(),
-        subject: formData.subject.trim(),
-        message: formData.message.trim(),
-        status: 'new',
+        phoneNumber: '',
+        referralSource: 'Connect With The Edge',
+        age: '',
+        concerns: [],
+        sensitivityLevel: 'Medium',
+        hormonalStage: 'Standard',
+        stressLevel: 5,
+        sleepQuality: 'Average',
+        waterIntake: 'Standard',
+        dietaryProfile: [],
+        activityLevel: 'Moderate',
+        caffeineIntake: 'Moderate',
+        currentRoutine: '',
+        professionalHistory: '',
+        primaryIntent: formData.subject.trim(),
+        clinicalFocus: ['Contact Message'],
+        contactSubject: formData.subject.trim(),
+        contactMessage: formData.message.trim(),
+        messageStatus: 'new',
         followUpNote: '',
+        source: 'contact-message',
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+        status: 'pending',
       });
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
