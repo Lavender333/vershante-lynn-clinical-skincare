@@ -157,6 +157,50 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
+      {/* Clinical Treatment Imagery */}
+      <motion.section
+        className="py-28 bg-brand-cream"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-10 items-end mb-12">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta">
+                <FlaskConical size={14} />
+                Clinical Method
+              </div>
+              <h2 className="text-5xl font-serif text-brand-slate italic leading-tight">
+                Corrective care, seen clearly.
+              </h2>
+            </div>
+            <p className="text-brand-moss/70 font-light leading-relaxed max-w-2xl lg:ml-auto">
+              Treatment visuals reflect the precision behind the Skin Intelligence approach: calm analysis,
+              professional technique, and melanin-aware corrective skincare.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-[1.25fr_0.75fr] gap-6">
+            <div className="rounded-[3rem] overflow-hidden shadow-2xl border border-brand-sand bg-white">
+              <img
+                src={imagePath('vershante-procell-treatment-room.jpg')}
+                alt="Vershanté Lynn performing a ProCell treatment in a clinical skincare room"
+                className="w-full h-full min-h-[420px] md:min-h-[560px] object-cover"
+              />
+            </div>
+            <div className="rounded-[3rem] overflow-hidden shadow-2xl border border-brand-sand bg-white">
+              <img
+                src={imagePath('vershante-procell-closeup.jpg')}
+                alt="Close-up of a ProCell corrective skincare treatment on melanin-rich skin"
+                className="w-full h-full min-h-[420px] md:min-h-[560px] object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
       {/* Upcoming Events */}
       <motion.section
         className="py-28 bg-brand-cream"
@@ -223,23 +267,23 @@ export default function LandingPage() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-24 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-[1.1fr_0.9fr] gap-20 xl:gap-28 items-center">
           <div className="order-2 md:order-1 relative">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-5">
               <div className="space-y-4">
                 <img
                   src={imagePath('vershante-education-room.jpg')}
                   alt="Vershanté Lynn teaching a professional skincare education session"
-                  className="rounded-3xl shadow-lg border border-brand-sand/20 aspect-[3/4] object-cover"
+                  className="rounded-3xl shadow-lg border border-brand-sand/20 aspect-[3/4] min-h-[360px] md:min-h-[520px] object-cover"
                 />
-                <div className="bg-brand-sand h-32 rounded-3xl eclectic-print" />
+                <div className="bg-brand-sand h-40 rounded-3xl eclectic-print" />
               </div>
               <div className="pt-12 space-y-4">
-                <div className="bg-brand-moss/10 h-32 rounded-3xl" />
+                <div className="bg-brand-moss/10 h-40 rounded-3xl" />
                 <img
                   src={imagePath('vershante-black-spa-expo.jpg')}
                   alt="Vershanté Lynn speaking at the Black Spa Expo"
-                  className="rounded-3xl shadow-lg border border-brand-sand/20 aspect-[3/4] object-cover"
+                  className="rounded-3xl shadow-lg border border-brand-sand/20 aspect-[3/4] min-h-[360px] md:min-h-[520px] object-cover"
                 />
               </div>
             </div>
