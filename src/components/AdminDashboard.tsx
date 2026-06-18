@@ -82,7 +82,7 @@ const imageFileToDataUrl = (file: File): Promise<string> => {
     reader.onload = () => {
       const img = new Image();
       img.onload = () => {
-        const maxSize = 1200;
+        const maxSize = 900;
         const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
         const width = Math.round(img.width * scale);
         const height = Math.round(img.height * scale);
@@ -99,7 +99,12 @@ const imageFileToDataUrl = (file: File): Promise<string> => {
         ctx.fillStyle = '#ece6e1';
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.72));
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.68);
+        if (dataUrl.length > 950000) {
+          reject(new Error('Image is still too large after compression.'));
+          return;
+        }
+        resolve(dataUrl);
       };
       img.onerror = () => reject(new Error('Unable to read image.'));
       img.src = String(reader.result);
@@ -468,29 +473,18 @@ export default function AdminDashboard() {
         }
         toast.success('Event updated');
       } else {
-        try {
-          await addDoc(collection(db, 'events'), {
-            ...payload,
-            createdAt: serverTimestamp()
-          });
-          toast.success('Event posted to homepage');
-        } catch (eventError) {
-          console.info('Saving event through assessments fallback.', eventError);
-          await addDoc(collection(db, 'assessments'), {
-            ...buildAssessmentBackedEvent(payload),
-            createdAt: serverTimestamp()
-          });
-          toast.success('Event saved in admin', {
-            description: 'Publish the event database rule so it can appear publicly on the homepage.'
-          });
-        }
+        await addDoc(collection(db, 'events'), {
+          ...payload,
+          createdAt: serverTimestamp()
+        });
+        toast.success('Event posted publicly to homepage');
       }
 
       resetEventForm();
     } catch (error) {
       console.error('Failed to save event', error);
       toast.error('Event save failed', {
-        description: 'Please try again from the admin dashboard.'
+        description: 'This must save to the public events calendar before it can show on the homepage.'
       });
     } finally {
       setEventSaving(false);

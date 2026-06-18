@@ -228,17 +228,17 @@ export default function LandingPage() {
           </div>
 
           {events.length > 0 ? (
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6">
               {events.map((event) => {
                 const eventDate = new Date(`${event.date}T12:00:00`);
                 return (
-                  <article key={event.id} className="bg-white border border-brand-sand rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                  <article key={event.id} className="bg-white border border-brand-sand rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col min-h-full">
                     {event.imageUrl && (
-                      <div className="aspect-[16/9] overflow-hidden bg-brand-sand/20">
+                      <div className="aspect-[4/3] sm:aspect-[16/10] overflow-hidden bg-brand-sand/20">
                         <img src={event.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       </div>
                     )}
-                    <div className="p-6 space-y-5">
+                    <div className="p-5 sm:p-6 space-y-5 flex flex-col flex-grow">
                       <div className="flex gap-4">
                         <div className="w-16 h-16 rounded-xl bg-brand-terracotta text-white flex flex-col items-center justify-center shrink-0">
                           <span className="text-[10px] uppercase tracking-widest font-bold">{eventDate.toLocaleDateString('en-US', { month: 'short' })}</span>
@@ -252,13 +252,13 @@ export default function LandingPage() {
                           </div>
                         </div>
                       </div>
-                      <p className="text-sm text-brand-moss/70 font-light leading-relaxed">{event.description}</p>
+                      <p className="text-sm text-brand-moss/70 font-light leading-relaxed flex-grow">{event.description}</p>
                       {event.linkUrl && (
                         <a
                           href={event.linkUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-terracotta hover:text-brand-slate transition-colors"
+                          className="inline-flex w-fit items-center gap-2 rounded-full border border-brand-terracotta/30 px-4 py-2 text-[10px] uppercase tracking-widest font-bold text-brand-terracotta hover:bg-brand-terracotta hover:text-white transition-colors"
                         >
                           Event Details
                           <ExternalLink size={12} />
