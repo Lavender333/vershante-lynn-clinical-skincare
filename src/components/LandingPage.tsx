@@ -182,13 +182,27 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="max-w-4xl ml-auto">
-            <div className="rounded-[3rem] overflow-hidden shadow-2xl border border-brand-sand bg-white">
-              <img
-                src={imagePath('vershante-procell-closeup.jpg')}
-                alt="Close-up of a ProCell corrective skincare treatment on melanin-rich skin"
-                className="w-full h-full min-h-[420px] md:min-h-[560px] object-cover"
-              />
+          <div className="grid md:grid-cols-3 gap-5">
+            <div className="bg-white border border-brand-sand rounded-2xl p-8 shadow-sm">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-4">01</p>
+              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Assess</h3>
+              <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
+                Skin history, visible patterns, product use, lifestyle signals, and barrier behavior are reviewed before correction begins.
+              </p>
+            </div>
+            <div className="bg-white border border-brand-sand rounded-2xl p-8 shadow-sm">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-4">02</p>
+              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Interpret</h3>
+              <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
+                Pigment, inflammation, congestion, dehydration, and sensitivity are read as connected patterns, not isolated symptoms.
+              </p>
+            </div>
+            <div className="bg-white border border-brand-sand rounded-2xl p-8 shadow-sm">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-4">03</p>
+              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Correct</h3>
+              <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
+                Treatment strategy and homecare guidance are matched to how your skin is responding over time.
+              </p>
             </div>
           </div>
         </div>
