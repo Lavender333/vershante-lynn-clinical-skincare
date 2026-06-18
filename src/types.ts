@@ -83,6 +83,9 @@ export interface AssessmentData {
   previousReactions: string;
   desiredOutcome: string;
   topGoals: string;
+  goals?: string;
+  investmentPreference?: string;
+  linkedAssessmentId?: string | null;
   commitmentLevel: 'Ready' | 'Curious' | 'Committed' | '';
   opennessToCorrectiveCare: 'Yes' | 'Maybe' | 'Prefer guidance' | '';
   frontPhotoNotes: string;

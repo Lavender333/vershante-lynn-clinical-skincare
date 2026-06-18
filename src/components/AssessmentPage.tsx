@@ -98,33 +98,50 @@ export default function AssessmentPage() {
   const handleBookingComplete = async (slot: ConsultationSlot) => {
     setLoading(true);
     try {
-      if (assessmentId) {
-        await updateDoc(doc(db, 'assessments', assessmentId), {
-          consultationSlot: slot,
-          status: 'scheduled'
-        });
-      } else {
+      const createBookingRecord = async () => {
         const docRef = await addDoc(collection(db, 'assessments'), {
-          fullName: 'Direct Calendar Booking',
-          email: user?.email || '',
-          phoneNumber: '',
-          concerns: [],
-          dietaryProfile: [],
-          clinicalFocus: ['Scheduled Assessment'],
-          age: '',
-          hormonalStage: 'Standard',
-          stressLevel: 5,
-          sleepQuality: 'Average',
-          investmentPreference: 'Skin Intelligence Assessment',
-          primaryIntent: 'Direct calendar booking',
-          currentRoutine: '',
+          fullName: data?.fullName || user?.displayName || 'Direct Calendar Booking',
+          preferredName: data?.preferredName || data?.fullName || user?.displayName || 'Direct Calendar Booking',
+          email: data?.email || user?.email || '',
+          phoneNumber: data?.phoneNumber || '',
+          referralSource: assessmentId ? 'Assessment Consultation Booking' : 'Direct Calendar Booking',
+          age: data?.age || '',
+          concerns: data?.concerns || [],
+          sensitivityLevel: data?.sensitivityLevel || 'Medium',
+          hormonalStage: data?.hormonalStage || 'Standard',
+          stressLevel: data?.stressLevel || 5,
+          sleepQuality: data?.sleepQuality || 'Average',
+          waterIntake: data?.waterIntake || 'Standard',
+          dietaryProfile: data?.dietaryProfile || [],
+          activityLevel: data?.activityLevel || 'Moderate',
+          caffeineIntake: data?.caffeineIntake || 'Moderate',
+          currentRoutine: data?.currentRoutine || '',
+          professionalHistory: data?.professionalHistory || '',
+          investmentPreference: data?.investmentPreference || 'Skin Intelligence Assessment',
+          primaryIntent: assessmentId ? 'Assessment consultation booking' : 'Direct calendar booking',
+          clinicalFocus: data?.clinicalFocus?.length ? data.clinicalFocus : ['Scheduled Assessment'],
           consultationSlot: slot,
+          linkedAssessmentId: assessmentId || null,
           userId: user?.uid || null,
           createdAt: serverTimestamp(),
-          source: 'direct-calendar-booking',
-          status: 'scheduled'
+          source: assessmentId ? 'assessment-calendar-booking' : 'direct-calendar-booking',
+          status: 'pending'
         });
         setAssessmentId(docRef.id);
+      };
+
+      if (assessmentId && user) {
+        try {
+          await updateDoc(doc(db, 'assessments', assessmentId), {
+            consultationSlot: slot,
+            status: 'scheduled'
+          });
+        } catch (updateError) {
+          console.info('Assessment update blocked; creating booking record instead.', updateError);
+          await createBookingRecord();
+        }
+      } else {
+        await createBookingRecord();
       }
       setSelectedSlot(slot);
       setFlowStep('success');
