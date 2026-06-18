@@ -1114,7 +1114,7 @@ export default function AdminDashboard() {
 
               <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
                 <a
-                  href="https://lavender333.github.io/vershante-lynn-clinical-skincare/assessment"
+                  href="https://vershantelynnaesthetics.com/assessment"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center justify-center gap-2 bg-brand-terracotta text-white px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-brand-slate transition-all shadow-sm whitespace-nowrap"
