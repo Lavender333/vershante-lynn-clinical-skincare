@@ -19,6 +19,17 @@
 }
 
 @layer base {
+  :root {
+    --noble-cream: #e1d8d1;
+    --puffy-pillow: #ece6e1;
+    --ludicrous-lemming: #c08c72;
+    --midnight-edition: #070f1b;
+    --satin-deep-black: #171d28;
+    --noble-chocolate: #6c4333;
+    --mocha-madness: #886a5a;
+    --monument-valley: #a85a34;
+  }
+
   body {
     @apply bg-brand-cream text-brand-slate font-sans selection:bg-brand-sand selection:text-brand-moss;
   }
