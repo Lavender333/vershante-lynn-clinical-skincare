@@ -7,6 +7,12 @@ import { db } from '../lib/firebase';
 import { EventPost } from '../types';
 
 const imagePath = (fileName: string) => `${import.meta.env.BASE_URL}images/${fileName}`;
+const localDateKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export default function LandingPage() {
   const [events, setEvents] = useState<EventPost[]>([]);
@@ -14,7 +20,7 @@ export default function LandingPage() {
   useEffect(() => {
     const q = query(collection(db, 'events'), orderBy('date', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localDateKey();
       const upcoming = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }) as EventPost)
         .filter((event) => event.date >= today);

@@ -508,6 +508,38 @@ export default function AdminDashboard() {
     }
   };
 
+  const publishEventToHomepage = async (event: EventPost) => {
+    if (!event.title || !event.date || !event.time || !event.location || !event.description) {
+      toast.error('Event needs a little more detail before publishing');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'events'), {
+        title: event.title.trim(),
+        date: event.date,
+        time: event.time.trim(),
+        location: event.location.trim(),
+        description: event.description.trim(),
+        imageUrl: event.imageUrl?.trim() || '',
+        linkUrl: event.linkUrl?.trim() || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      if (event.storage === 'assessments' && event.id) {
+        await deleteDoc(doc(db, 'assessments', event.id));
+      }
+
+      toast.success('Event posted publicly to homepage');
+    } catch (error) {
+      console.error('Failed to publish event publicly', error);
+      toast.error('Unable to publish event publicly', {
+        description: 'Check that the public events database rule is active for this Firebase database.'
+      });
+    }
+  };
+
   const updateContactMessage = async (message: ContactMessage, updates: Partial<ContactMessage>) => {
     if (!message.id) return;
 
@@ -1640,6 +1672,15 @@ export default function AdminDashboard() {
                             </a>
                           )}
                           <div className="flex gap-2 pt-2">
+                            {event.storage === 'assessments' && (
+                              <button
+                                onClick={() => publishEventToHomepage(event)}
+                                className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-moss hover:text-brand-terracotta"
+                              >
+                                <ArrowUpRight size={12} />
+                                Publish
+                              </button>
+                            )}
                             <button
                               onClick={() => handleEditEvent(event)}
                               className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-terracotta hover:text-brand-slate"
