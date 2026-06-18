@@ -1122,6 +1122,15 @@ export default function AdminDashboard() {
                   Assessment Link
                   <ExternalLink size={13} />
                 </a>
+                <a
+                  href="https://vershantelynnaesthetics.com/assessment?step=booking"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 border border-brand-sand bg-white text-brand-moss px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:border-brand-terracotta hover:text-brand-terracotta transition-all shadow-sm whitespace-nowrap"
+                >
+                  Virtual Scheduling Link
+                  <ExternalLink size={13} />
+                </a>
                 <div className="relative w-full md:w-80">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-sand" size={16} />
                   <input

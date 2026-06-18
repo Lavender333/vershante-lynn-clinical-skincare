@@ -276,10 +276,8 @@ export default function LandingPage() {
                   alt="Vershanté Lynn teaching a professional skincare education session"
                   className="rounded-3xl shadow-lg border border-brand-sand/20 aspect-[3/4] min-h-[360px] md:min-h-[520px] object-cover"
                 />
-                <div className="bg-brand-sand h-40 rounded-3xl eclectic-print" />
               </div>
-              <div className="pt-12 space-y-4">
-                <div className="bg-brand-moss/10 h-40 rounded-3xl" />
+              <div className="pt-12">
                 <img
                   src={imagePath('vershante-black-spa-expo.jpg')}
                   alt="Vershanté Lynn speaking at the Black Spa Expo"

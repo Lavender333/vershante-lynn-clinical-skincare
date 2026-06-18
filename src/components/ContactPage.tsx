@@ -5,8 +5,6 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { cn } from '../lib/utils';
 
-const CONTACT_EMAIL = 'artbrowbeautycle@gmail.com';
-
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -56,7 +54,7 @@ export default function ContactPage() {
     } catch (error) {
       console.error('Contact message save failed:', error);
       setStatus('error');
-      setErrorMessage(`Unable to save your message. Please email ${CONTACT_EMAIL} directly.`);
+      setErrorMessage('Unable to save your message right now. Please try again later.');
     }
   };
 
@@ -98,21 +96,6 @@ export default function ContactPage() {
             transition={{ delay: 0.3 }}
             className="md:col-span-2 space-y-10"
           >
-            <div>
-              <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-6">Contact Channels</h3>
-              <div className="space-y-6">
-                <a href={`mailto:${CONTACT_EMAIL}`} className="group flex items-center gap-4 bg-white p-6 rounded-2xl border border-brand-sand hover:border-brand-moss/30 transition-all shadow-sm">
-                  <div className="w-10 h-10 bg-brand-sand/20 rounded-xl flex items-center justify-center text-brand-moss group-hover:bg-brand-moss group-hover:text-white transition-all">
-                    <Mail size={18} />
-                  </div>
-                  <div>
-                    <p className="text-[8px] uppercase tracking-widest text-brand-sand font-bold mb-1">Email Protocol</p>
-                    <p className="text-sm font-bold text-brand-slate">{CONTACT_EMAIL}</p>
-                  </div>
-                </a>
-              </div>
-            </div>
-
             <div className="bg-brand-slate text-brand-cream p-8 rounded-[2.5rem] relative overflow-hidden shadow-xl">
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <FlaskConical size={120} />

@@ -6,6 +6,7 @@ import SkinIntelligenceScreening from './components/SkinIntelligenceScreening';
 import AssessmentPage from './components/AssessmentPage';
 import PhilosophyPage from './components/PhilosophyPage';
 import ContactPage from './components/ContactPage';
+import BookNowPage from './components/BookNowPage';
 import AdminDashboard from './components/AdminDashboard';
 import ClientDashboard from './components/ClientDashboard';
 import { MapPin, Lock } from 'lucide-react';
@@ -41,6 +42,7 @@ function Footer() {
           <ul className="space-y-4 text-sm text-brand-moss/80 font-light">
             <li><Link to="/" className="hover:text-brand-terracotta transition-colors">The Edge</Link></li>
             <li><Link to="/screening" className="hover:text-brand-terracotta transition-colors">Free Screening</Link></li>
+            <li><Link to="/book-now" className="hover:text-brand-terracotta transition-colors">Book Now</Link></li>
             <li><Link to="/philosophy" className="hover:text-brand-terracotta transition-colors">Philosophy</Link></li>
             <li><Link to="/contact" className="hover:text-brand-terracotta transition-colors">Contact Us</Link></li>
             <li><Link to="/my-intelligence" className="hover:text-brand-terracotta transition-colors">My Intelligence Portal</Link></li>
@@ -99,6 +101,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/screening" element={<SkinIntelligenceScreening />} />
+            <Route path="/book-now" element={<BookNowPage />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/philosophy" element={<PhilosophyPage />} />
             <Route path="/contact" element={<ContactPage />} />

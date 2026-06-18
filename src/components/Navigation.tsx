@@ -68,6 +68,7 @@ export default function Navigation() {
             </Link>
           )}
 
+          <Link to="/book-now" className={cn("hover:text-brand-terracotta transition-colors", location.pathname === '/book-now' && "text-brand-terracotta")} aria-current={location.pathname === '/book-now' ? "page" : undefined}>Book Now</Link>
           <Link to="/philosophy" className={cn("hover:text-brand-terracotta transition-colors", location.pathname === '/philosophy' && "text-brand-terracotta")} aria-current={location.pathname === '/philosophy' ? "page" : undefined}>Philosophy</Link>
           <Link to="/contact" className={cn("hover:text-brand-terracotta transition-colors", location.pathname === '/contact' && "text-brand-terracotta")} aria-current={location.pathname === '/contact' ? "page" : undefined}>Contact</Link>
           <Link to="/my-intelligence" className={cn("flex items-center gap-1 hover:text-brand-terracotta transition-colors", location.pathname === '/my-intelligence' && "text-brand-terracotta")} aria-current={location.pathname === '/my-intelligence' ? "page" : undefined}>
@@ -88,10 +89,10 @@ export default function Navigation() {
         </div>
 
         <Link
-          to="/screening"
+          to="/book-now"
           className="bg-brand-terracotta text-white px-6 py-2.5 rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-brand-slate transition-all hover:scale-105 active:scale-95 flex items-center gap-2 shadow-lg shadow-brand-terracotta/20"
         >
-          Free Screening
+          Book Now
         </Link>
       </div>
     </nav>

@@ -8,7 +8,7 @@ import { db } from '../lib/firebase';
 
 type ScreeningStep = 'intro' | 'questions' | 'contact' | 'results';
 
-const POCKETSUITE_BOOKING_URL = import.meta.env.VITE_POCKETSUITE_BOOKING_URL || '/assessment?step=booking';
+const POCKETSUITE_BOOKING_URL = import.meta.env.VITE_POCKETSUITE_BOOKING_URL || 'https://pocketsuite.io/book/vershantelynn/items/skin-intelligence-assessment';
 const isExternalBookingUrl = POCKETSUITE_BOOKING_URL.startsWith('http');
 
 interface ScreeningAnswers {
