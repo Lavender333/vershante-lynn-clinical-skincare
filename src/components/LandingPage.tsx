@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { ArrowRight, Brain, Calendar, Clock, FlaskConical, MapPin, Quote, ShieldCheck, Heart, Droplets } from 'lucide-react';
+import { ArrowRight, Brain, Calendar, Clock, FlaskConical, MapPin, Quote, ShieldCheck, Heart, Droplets, ExternalLink } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { EventPost } from '../types';
 
@@ -246,6 +246,17 @@ export default function LandingPage() {
                         </div>
                       </div>
                       <p className="text-sm text-brand-moss/70 font-light leading-relaxed">{event.description}</p>
+                      {event.linkUrl && (
+                        <a
+                          href={event.linkUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-terracotta hover:text-brand-slate transition-colors"
+                        >
+                          Event Details
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
                     </div>
                   </article>
                 );

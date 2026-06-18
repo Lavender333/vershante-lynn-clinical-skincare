@@ -10,6 +10,7 @@ type ScreeningStep = 'intro' | 'questions' | 'contact' | 'results';
 
 const POCKETSUITE_BOOKING_URL = import.meta.env.VITE_POCKETSUITE_BOOKING_URL || 'https://pocketsuite.io/book/vershantelynn/items/skin-intelligence-assessment';
 const isExternalBookingUrl = POCKETSUITE_BOOKING_URL.startsWith('http');
+const imagePath = (fileName: string) => `${import.meta.env.BASE_URL}images/${fileName}`;
 
 interface ScreeningAnswers {
   q1: string[];
@@ -313,10 +314,9 @@ export default function SkinIntelligenceScreening() {
             <div className="relative">
               <div className="aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl border border-brand-sand bg-brand-sand/20">
                 <img
-                  src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&q=80&w=900"
-                  alt="Editorial skincare consultation"
+                  src={imagePath('vershante-procell-treatment-room.jpg')}
+                  alt="Vershanté Lynn performing a professional corrective skincare treatment"
                   className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
                 />
               </div>
               <div className="absolute -bottom-5 left-5 right-5 bg-white/90 backdrop-blur border border-brand-sand rounded-2xl p-5 shadow-xl">

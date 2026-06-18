@@ -18,6 +18,7 @@ export interface EventPost {
   location: string;
   description: string;
   imageUrl?: string;
+  linkUrl?: string;
   createdAt?: any;
   updatedAt?: any;
 }
@@ -138,6 +139,7 @@ export interface AssessmentData {
   eventLocation?: string;
   eventDescription?: string;
   eventImageUrl?: string;
+  eventLinkUrl?: string;
 }
 
 export interface ConsultationSlot {

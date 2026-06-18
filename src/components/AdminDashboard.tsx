@@ -138,7 +138,8 @@ export default function AdminDashboard() {
     time: '',
     location: '',
     description: '',
-    imageUrl: ''
+    imageUrl: '',
+    linkUrl: ''
   });
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [editingEventStorage, setEditingEventStorage] = useState<'events' | 'assessments'>('events');
@@ -359,7 +360,8 @@ export default function AdminDashboard() {
       time: '',
       location: '',
       description: '',
-      imageUrl: ''
+      imageUrl: '',
+      linkUrl: ''
     });
     setEditingEventId(null);
     setEditingEventStorage('events');
@@ -372,7 +374,8 @@ export default function AdminDashboard() {
       time: event.time || '',
       location: event.location || '',
       description: event.description || '',
-      imageUrl: event.imageUrl || ''
+      imageUrl: event.imageUrl || '',
+      linkUrl: event.linkUrl || ''
     });
     setEditingEventId(event.id || null);
     setEditingEventStorage(event.storage || 'events');
@@ -385,6 +388,7 @@ export default function AdminDashboard() {
     location: string;
     description: string;
     imageUrl: string;
+    linkUrl: string;
   }) => ({
     fullName: 'Homepage Event',
     preferredName: 'Homepage Event',
@@ -413,6 +417,7 @@ export default function AdminDashboard() {
     eventLocation: payload.location,
     eventDescription: payload.description,
     eventImageUrl: payload.imageUrl,
+    eventLinkUrl: payload.linkUrl,
     updatedAt: serverTimestamp()
   });
 
@@ -451,6 +456,7 @@ export default function AdminDashboard() {
         location: eventForm.location.trim(),
         description: eventForm.description.trim(),
         imageUrl: eventForm.imageUrl?.trim() || '',
+        linkUrl: eventForm.linkUrl?.trim() || '',
         updatedAt: serverTimestamp()
       };
 
@@ -967,6 +973,7 @@ export default function AdminDashboard() {
       location: record.eventLocation || '',
       description: record.eventDescription || '',
       imageUrl: record.eventImageUrl || '',
+      linkUrl: record.eventLinkUrl || '',
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     }));
@@ -1550,6 +1557,17 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Event Link Optional</label>
+                  <input
+                    type="url"
+                    value={eventForm.linkUrl || ''}
+                    onChange={(e) => setEventForm({ ...eventForm, linkUrl: e.target.value })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Event Image Optional</label>
                   <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-brand-sand bg-brand-cream/40 px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-brand-moss transition-all hover:border-brand-terracotta hover:text-brand-terracotta">
                     <ImagePlus size={16} />
@@ -1616,6 +1634,17 @@ export default function AdminDashboard() {
                             )}
                           </div>
                           <p className="text-sm text-brand-moss/70 font-light leading-relaxed">{event.description}</p>
+                          {event.linkUrl && (
+                            <a
+                              href={event.linkUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-terracotta hover:text-brand-slate"
+                            >
+                              Event Link
+                              <ExternalLink size={12} />
+                            </a>
+                          )}
                           <div className="flex gap-2 pt-2">
                             <button
                               onClick={() => handleEditEvent(event)}
