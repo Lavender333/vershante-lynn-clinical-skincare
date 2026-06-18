@@ -71,17 +71,17 @@ function Footer() {
       </div>
       
         <div className="max-w-7xl mx-auto px-6 pt-12 border-t border-brand-sand/50 flex flex-col md:flex-row justify-between items-center gap-6">
-          <span className="text-[10px] uppercase tracking-[0.2em] text-brand-sand font-bold">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-brand-moss font-bold">
             © {new Date().getFullYear()} Vershanté Lynn Aesthetics. All rights reserved.
           </span>
-          <div className="flex gap-8 text-[9px] uppercase tracking-widest text-brand-sand font-bold">
-            <a href="#" className="hover:text-brand-moss transition-all">Privacy Policy</a>
-            <a href="#" className="hover:text-brand-moss transition-all">Terms</a>
-            <Link to="/my-intelligence" className="flex items-center gap-1 hover:text-brand-moss transition-all">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-[9px] uppercase tracking-widest text-brand-moss font-bold">
+            <a href="#" className="hover:text-brand-terracotta transition-all">Privacy Policy</a>
+            <a href="#" className="hover:text-brand-terracotta transition-all">Terms</a>
+            <Link to="/my-intelligence" className="flex items-center gap-1 hover:text-brand-terracotta transition-all">
               <Lock size={8} /> My Portal
             </Link>
-            <Link to="/dashboard" className="flex items-center gap-1 hover:text-brand-moss transition-all">
-              <Lock size={8} /> Professional
+            <Link to="/dashboard" className="flex items-center gap-1 hover:text-brand-terracotta transition-all">
+              <Lock size={8} /> Enter Skin Care Workspace
             </Link>
           </div>
         </div>
