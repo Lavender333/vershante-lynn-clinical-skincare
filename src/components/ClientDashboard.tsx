@@ -382,7 +382,7 @@ export default function ClientDashboard() {
   }));
 
   return (
-    <div className="min-h-screen bg-[#FDFCF9] pt-24 pb-12 px-6 lg:px-12">
+    <div className="min-h-screen bg-brand-cream pt-24 pb-12 px-6 lg:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
           <div>
@@ -446,7 +446,7 @@ export default function ClientDashboard() {
                 <div className="flex items-center gap-8">
                     <div className="relative group">
                         <img 
-                            src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=EBE4D5&color=4A5D4E`} 
+                            src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=ece6e1&color=070f1b`}
                             alt={user.displayName || ''} 
                             className="w-24 h-24 rounded-[2rem] border-4 border-brand-cream shadow-md object-cover" 
                         />
@@ -538,24 +538,24 @@ export default function ClientDashboard() {
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EBE4D5" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e1d8d1" />
                                 <XAxis 
                                     dataKey="date" 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{ fill: '#A89F91', fontSize: 10, fontWeight: 'bold' }}
+                                    tick={{ fill: '#886a5a', fontSize: 10, fontWeight: 'bold' }}
                                     dy={10}
                                 />
                                 <YAxis 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{ fill: '#A89F91', fontSize: 10, fontWeight: 'bold' }}
+                                    tick={{ fill: '#886a5a', fontSize: 10, fontWeight: 'bold' }}
                                 />
                                 <Tooltip 
                                     contentStyle={{ 
                                         backgroundColor: '#FFFFFF', 
                                         borderRadius: '16px', 
-                                        border: '1px solid #EBE4D5',
+                                        border: '1px solid #e1d8d1',
                                         boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                                         fontSize: '12px'
                                     }}
@@ -576,18 +576,18 @@ export default function ClientDashboard() {
                                     name="Stress Level" 
                                     type="monotone" 
                                     dataKey="stress" 
-                                    stroke="#D4735B" 
+                                    stroke="#a85a34"
                                     strokeWidth={3}
-                                    dot={{ r: 4, fill: '#D4735B', strokeWidth: 2, stroke: '#FFFFFF' }}
+                                    dot={{ r: 4, fill: '#a85a34', strokeWidth: 2, stroke: '#FFFFFF' }}
                                     activeDot={{ r: 6 }}
                                 />
                                 <Line 
                                     name="Sleep Quality" 
                                     type="monotone" 
                                     dataKey="sleep" 
-                                    stroke="#4A5D4E" 
+                                    stroke="#886a5a"
                                     strokeWidth={3}
-                                    dot={{ r: 4, fill: '#4A5D4E', strokeWidth: 2, stroke: '#FFFFFF' }}
+                                    dot={{ r: 4, fill: '#886a5a', strokeWidth: 2, stroke: '#FFFFFF' }}
                                     activeDot={{ r: 6 }}
                                 />
                             </LineChart>

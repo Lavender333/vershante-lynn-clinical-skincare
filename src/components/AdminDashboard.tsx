@@ -96,7 +96,7 @@ const imageFileToDataUrl = (file: File): Promise<string> => {
           return;
         }
 
-        ctx.fillStyle = '#FDFCF9';
+        ctx.fillStyle = '#ece6e1';
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
         resolve(canvas.toDataURL('image/jpeg', 0.72));
@@ -975,7 +975,7 @@ export default function AdminDashboard() {
     .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
   return (
-    <div className="min-h-screen bg-[#FDFCF9] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-brand-cream flex flex-col md:flex-row">
       {/* Sidebar */}
       <aside className="w-full md:w-80 bg-brand-slate text-white p-8 flex flex-col">
         <div className="flex items-center gap-3 mb-12">

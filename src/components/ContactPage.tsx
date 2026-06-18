@@ -61,7 +61,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCF9] pt-32 pb-20 px-6">
+    <div className="min-h-screen bg-brand-cream pt-32 pb-20 px-6">
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-16">
           <motion.div
