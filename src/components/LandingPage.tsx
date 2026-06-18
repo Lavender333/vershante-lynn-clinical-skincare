@@ -182,14 +182,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-[1.25fr_0.75fr] gap-6">
-            <div className="rounded-[3rem] overflow-hidden shadow-2xl border border-brand-sand bg-white">
-              <img
-                src={imagePath('vershante-procell-treatment-room.jpg')}
-                alt="Vershanté Lynn performing a ProCell treatment in a clinical skincare room"
-                className="w-full h-full min-h-[420px] md:min-h-[560px] object-cover"
-              />
-            </div>
+          <div className="max-w-4xl ml-auto">
             <div className="rounded-[3rem] overflow-hidden shadow-2xl border border-brand-sand bg-white">
               <img
                 src={imagePath('vershante-procell-closeup.jpg')}
