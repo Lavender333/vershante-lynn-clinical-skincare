@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Navigation from './components/Navigation';
@@ -10,8 +11,16 @@ import BookNowPage from './components/BookNowPage';
 import AdminDashboard from './components/AdminDashboard';
 import ClientDashboard from './components/ClientDashboard';
 import { MapPin, Lock } from 'lucide-react';
+import { auth } from './lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function Footer() {
+  const [user, setUser] = useState(auth.currentUser);
+
+  useEffect(() => {
+    return onAuthStateChanged(auth, setUser);
+  }, []);
+
   return (
     <footer className="bg-brand-sand/20 border-t border-brand-sand pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-16">
@@ -78,10 +87,7 @@ function Footer() {
             <a href="#" className="hover:text-brand-terracotta transition-all">Privacy Policy</a>
             <a href="#" className="hover:text-brand-terracotta transition-all">Terms</a>
             <Link to="/my-intelligence" className="flex items-center gap-1 hover:text-brand-terracotta transition-all">
-              <Lock size={8} /> My Portal
-            </Link>
-            <Link to="/dashboard" className="flex items-center gap-1 hover:text-brand-terracotta transition-all">
-              <Lock size={8} /> Enter Skin Care Workspace
+              <Lock size={8} /> {user ? 'My Portal' : 'Portal Login'}
             </Link>
           </div>
         </div>

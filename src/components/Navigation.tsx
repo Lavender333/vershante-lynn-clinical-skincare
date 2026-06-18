@@ -82,7 +82,7 @@ export default function Navigation() {
                     <div className="w-5 h-5 rounded-full overflow-hidden border border-brand-sand">
                         <img src={user.photoURL || ''} alt="" className="w-full h-full object-cover" />
                     </div>
-                    My Intelligence
+                    My Portal
                 </div>
             ) : (
                 <>
@@ -122,12 +122,12 @@ export default function Navigation() {
             <Link to="/contact" className={cn("block rounded-2xl bg-white/70 border border-brand-sand px-5 py-4 text-sm uppercase tracking-widest font-bold text-brand-slate", location.pathname === '/contact' && "text-brand-terracotta border-brand-terracotta/40")}>Contact</Link>
             <Link to="/my-intelligence" className={cn("flex items-center gap-2 rounded-2xl bg-white/70 border border-brand-sand px-5 py-4 text-sm uppercase tracking-widest font-bold text-brand-slate", location.pathname === '/my-intelligence' && "text-brand-terracotta border-brand-terracotta/40")}>
               <Lock size={13} />
-              My Intelligence Portal
+              {user ? 'My Portal' : 'Portal Login'}
             </Link>
             {isAdmin && (
               <Link to="/dashboard" className={cn("flex items-center gap-2 rounded-2xl bg-brand-slate px-5 py-4 text-sm uppercase tracking-widest font-bold text-white", location.pathname === '/dashboard' && "bg-brand-terracotta")}>
                 <Lock size={13} />
-                Enter Skin Care Workspace
+                Workspace
               </Link>
             )}
           </div>
