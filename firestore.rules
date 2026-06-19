@@ -67,6 +67,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /settings/virtualAvailability {
+      allow read: if true; // Public read: virtual booking calendar needs this without auth
+      allow write: if isAdmin();
+    }
+
     // --- Homepage Events ---
     match /events/{eventId} {
       allow read: if true;

@@ -294,7 +294,7 @@ export default function AssessmentPage() {
                 </div>
                 <h1 className="text-5xl font-serif text-brand-slate italic">Schedule Consultation</h1>
                 <p className="text-brand-moss/80 font-light">
-                  Select the consultation window for your Skin Intelligence Assessment. Availability is synchronized with the connected clinical calendar.
+                  Select the virtual meeting window for your Skin Intelligence Assessment. Availability is synchronized with the dedicated virtual consultation calendar.
                 </p>
               </div>
 

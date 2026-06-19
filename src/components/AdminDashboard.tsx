@@ -71,6 +71,32 @@ interface AssessmentRecord extends AssessmentData {
   }[];
 }
 
+const DEFAULT_CLINICAL_HOURS: OperatingHours = {
+  id: 'operatingHours',
+  days: {
+    'Monday': { open: '09:00', close: '17:00', closed: false },
+    'Tuesday': { open: '09:00', close: '17:00', closed: false },
+    'Wednesday': { open: '09:00', close: '17:00', closed: false },
+    'Thursday': { open: '09:00', close: '17:00', closed: false },
+    'Friday': { open: '09:00', close: '17:00', closed: false },
+    'Saturday': { open: '10:00', close: '14:00', closed: false },
+    'Sunday': { open: '00:00', close: '00:00', closed: true },
+  }
+};
+
+const DEFAULT_VIRTUAL_HOURS: OperatingHours = {
+  id: 'virtualAvailability',
+  days: {
+    'Monday': { open: '10:00', close: '16:00', closed: false },
+    'Tuesday': { open: '10:00', close: '16:00', closed: false },
+    'Wednesday': { open: '10:00', close: '16:00', closed: false },
+    'Thursday': { open: '10:00', close: '16:00', closed: false },
+    'Friday': { open: '10:00', close: '14:00', closed: false },
+    'Saturday': { open: '00:00', close: '00:00', closed: true },
+    'Sunday': { open: '00:00', close: '00:00', closed: true },
+  }
+};
+
 const imageFileToDataUrl = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith('image/')) {
@@ -131,6 +157,7 @@ export default function AdminDashboard() {
   const [activeSubTab, setActiveSubTab] = useState<'list' | 'calendar'>('list');
   const [adminsList, setAdminsList] = useState<{id: string, email: string}[]>([]);
   const [operatingHours, setOperatingHours] = useState<OperatingHours | null>(null);
+  const [virtualHours, setVirtualHours] = useState<OperatingHours | null>(null);
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [newAdminRole, setNewAdminRole] = useState<'admin' | 'professional' | 'specialist'>('admin');
@@ -272,19 +299,22 @@ export default function AdminDashboard() {
         if (snapshot.exists()) {
           setOperatingHours({ id: snapshot.id, ...snapshot.data() } as OperatingHours);
         } else {
-          // Initialize default hours if none exist
-          const defaults = {
-            days: {
-              'Monday': { open: '09:00', close: '17:00', closed: false },
-              'Tuesday': { open: '09:00', close: '17:00', closed: false },
-              'Wednesday': { open: '09:00', close: '17:00', closed: false },
-              'Thursday': { open: '09:00', close: '17:00', closed: false },
-              'Friday': { open: '09:00', close: '17:00', closed: false },
-              'Saturday': { open: '10:00', close: '14:00', closed: false },
-              'Sunday': { open: '00:00', close: '00:00', closed: true },
-            }
-          };
-          setDoc(doc(db, 'settings', 'operatingHours'), defaults);
+          setOperatingHours(DEFAULT_CLINICAL_HOURS);
+          setDoc(doc(db, 'settings', 'operatingHours'), DEFAULT_CLINICAL_HOURS);
+        }
+      });
+      return unsubscribe;
+    }
+  }, [user, isAdminState]);
+
+  useEffect(() => {
+    if (user && isAdminState) {
+      const unsubscribe = onSnapshot(doc(db, 'settings', 'virtualAvailability'), (snapshot) => {
+        if (snapshot.exists()) {
+          setVirtualHours({ id: snapshot.id, ...snapshot.data() } as OperatingHours);
+        } else {
+          setVirtualHours(DEFAULT_VIRTUAL_HOURS);
+          setDoc(doc(db, 'settings', 'virtualAvailability'), DEFAULT_VIRTUAL_HOURS);
         }
       });
       return unsubscribe;
@@ -1809,10 +1839,15 @@ export default function AdminDashboard() {
         ) : (
           <SettingsView 
             hours={operatingHours} 
+            virtualHours={virtualHours}
             onUpdateHours={(newHours) => {
               setOperatingHours(newHours);
               setDoc(doc(db, 'settings', 'operatingHours'), newHours);
             }} 
+            onUpdateVirtualHours={(newHours) => {
+              setVirtualHours(newHours);
+              setDoc(doc(db, 'settings', 'virtualAvailability'), newHours);
+            }}
           />
         )}
       </main>
@@ -2406,6 +2441,7 @@ export default function AdminDashboard() {
                   )}
                   <BookingCalendar 
                     initialDate={selectedRecord?.consultationSlot?.date} 
+                    availabilityLabel="Virtual Meeting Availability"
                     onBook={handleReschedule} 
                   />
                 </div>
@@ -2476,39 +2512,51 @@ function CalendarView({ records, currentDate, onPrev, onNext, onSelectRecord }: 
   );
 }
 
-function SettingsView({ hours, onUpdateHours }: { hours: OperatingHours | null, onUpdateHours: (h: OperatingHours) => void }) {
-  if (!hours) return null;
+function SettingsView({
+  hours,
+  virtualHours,
+  onUpdateHours,
+  onUpdateVirtualHours
+}: {
+  hours: OperatingHours | null;
+  virtualHours: OperatingHours | null;
+  onUpdateHours: (h: OperatingHours) => void;
+  onUpdateVirtualHours: (h: OperatingHours) => void;
+}) {
+  if (!hours || !virtualHours) return null;
 
-  const handleUpdate = (day: string, field: 'open' | 'close' | 'closed', value: any) => {
-    const newHours = {
-      ...hours,
-      days: {
-        ...hours.days,
-        [day]: {
-          ...hours.days[day],
-          [field]: value
+  const renderHoursEditor = (
+    scheduleSet: OperatingHours,
+    onUpdate: (h: OperatingHours) => void,
+    title: string,
+    offlineLabel: string
+  ) => {
+    const handleUpdate = (day: string, field: 'open' | 'close' | 'closed', value: any) => {
+      const newHours = {
+        ...scheduleSet,
+        days: {
+          ...scheduleSet.days,
+          [day]: {
+            ...scheduleSet.days[day],
+            [field]: value
+          }
         }
-      }
+      };
+      onUpdate(newHours);
     };
-    onUpdateHours(newHours);
-  };
 
-  return (
-    <div className="max-w-4xl mx-auto py-12">
-      <h1 className="text-4xl font-serif text-brand-slate italic mb-2">Clinical Settings</h1>
-      <p className="text-brand-moss/60 font-light italic mb-12">Configure and synchronize global intelligence parameters.</p>
-
-      <div className="bg-white rounded-[2.5rem] border border-brand-sand p-10 shadow-xl">
+    return (
+      <div className="bg-white rounded-[2.5rem] border border-brand-sand p-6 md:p-10 shadow-xl">
         <div className="flex items-center gap-3 mb-8 pb-4 border-b border-brand-sand">
           <Clock className="text-brand-terracotta" size={24} />
-          <h3 className="text-xl font-serif italic text-brand-slate">Intelligence Capture Hours</h3>
+          <h3 className="text-xl font-serif italic text-brand-slate">{title}</h3>
         </div>
 
         <div className="space-y-6">
-          {Object.entries(hours.days).map(([day, schedule]) => (
+          {Object.entries(scheduleSet.days).map(([day, schedule]) => (
             <div key={day} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 hover:bg-brand-cream/30 rounded-2xl transition-all border border-transparent hover:border-brand-sand/50">
               <div className="flex items-center gap-4 min-w-[120px]">
-                <button 
+                <button
                   onClick={() => handleUpdate(day, 'closed', !schedule.closed)}
                   className={cn(
                     "w-4 h-4 rounded-full border-2 transition-all",
@@ -2522,8 +2570,8 @@ function SettingsView({ hours, onUpdateHours }: { hours: OperatingHours | null, 
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] uppercase font-bold text-brand-moss/40">Open</span>
-                    <input 
-                      type="time" 
+                    <input
+                      type="time"
                       value={schedule.open}
                       onChange={e => handleUpdate(day, 'open', e.target.value)}
                       className="bg-brand-cream/50 border border-brand-sand rounded-lg px-3 py-1.5 text-xs outline-none focus:border-brand-terracotta"
@@ -2531,8 +2579,8 @@ function SettingsView({ hours, onUpdateHours }: { hours: OperatingHours | null, 
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] uppercase font-bold text-brand-moss/40">Close</span>
-                    <input 
-                      type="time" 
+                    <input
+                      type="time"
                       value={schedule.close}
                       onChange={e => handleUpdate(day, 'close', e.target.value)}
                       className="bg-brand-cream/50 border border-brand-sand rounded-lg px-3 py-1.5 text-xs outline-none focus:border-brand-terracotta"
@@ -2540,18 +2588,30 @@ function SettingsView({ hours, onUpdateHours }: { hours: OperatingHours | null, 
                   </div>
                 </div>
               ) : (
-                <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-brand-terracotta/40 pr-8">Clinical Synchronization Offline</span>
+                <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-brand-terracotta/40 pr-8">{offlineLabel}</span>
               )}
             </div>
           ))}
         </div>
-        
+      </div>
+    );
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto py-12">
+      <h1 className="text-4xl font-serif text-brand-slate italic mb-2">Clinical Settings</h1>
+      <p className="text-brand-moss/60 font-light italic mb-12">Configure and synchronize global intelligence parameters.</p>
+
+      <div className="space-y-8">
+        {renderHoursEditor(hours, onUpdateHours, 'Clinical / In-Studio Hours', 'Clinical Synchronization Offline')}
+        {renderHoursEditor(virtualHours, onUpdateVirtualHours, 'Virtual Meeting Availability', 'Virtual Meetings Closed')}
+
         <div className="mt-12 p-6 bg-brand-moss/5 rounded-2xl border border-brand-moss/10 flex items-start gap-4">
           <Monitor className="text-brand-moss mt-1" size={18} />
           <div className="space-y-1">
             <p className="text-[10px] uppercase font-bold text-brand-moss tracking-widest">Global Synchronization Protocol</p>
             <p className="text-xs text-brand-moss/60 italic leading-relaxed">
-              "Updating clinical hours will instantly synchronize availability across all diagnostic capture windows and booking vectors."
+              "Clinical hours control in-studio operations. Virtual meeting availability controls the consultation calendar clients use after booking or from the private assessment link."
             </p>
           </div>
         </div>

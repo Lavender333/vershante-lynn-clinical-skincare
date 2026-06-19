@@ -7,43 +7,55 @@ import { db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { format, addDays, startOfToday, parse, addMinutes, isBefore } from 'date-fns';
 
-const DEFAULT_OPERATING_HOURS: OperatingHours = {
-  id: 'default',
+const DEFAULT_VIRTUAL_HOURS: OperatingHours = {
+  id: 'virtualAvailability',
   days: {
-    'Monday':    { open: '09:00', close: '17:00', closed: false },
-    'Tuesday':   { open: '09:00', close: '17:00', closed: false },
-    'Wednesday': { open: '09:00', close: '17:00', closed: false },
-    'Thursday':  { open: '09:00', close: '17:00', closed: false },
-    'Friday':    { open: '09:00', close: '17:00', closed: false },
-    'Saturday':  { open: '10:00', close: '14:00', closed: false },
+    'Monday':    { open: '10:00', close: '16:00', closed: false },
+    'Tuesday':   { open: '10:00', close: '16:00', closed: false },
+    'Wednesday': { open: '10:00', close: '16:00', closed: false },
+    'Thursday':  { open: '10:00', close: '16:00', closed: false },
+    'Friday':    { open: '10:00', close: '14:00', closed: false },
+    'Saturday':  { open: '00:00', close: '00:00', closed: true },
     'Sunday':    { open: '00:00', close: '00:00', closed: true },
   }
 };
 
-export default function BookingCalendar({ onBook, initialDate }: { onBook: (slot: ConsultationSlot) => void, initialDate?: string }) {
+type BookingCalendarProps = {
+  onBook: (slot: ConsultationSlot) => void;
+  initialDate?: string;
+  settingsDocId?: 'operatingHours' | 'virtualAvailability';
+  availabilityLabel?: string;
+};
+
+export default function BookingCalendar({
+  onBook,
+  initialDate,
+  settingsDocId = 'virtualAvailability',
+  availabilityLabel = 'Virtual Meeting Availability'
+}: BookingCalendarProps) {
   const [selectedDate, setSelectedDate] = useState(initialDate || format(startOfToday(), 'yyyy-MM-dd'));
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [operatingHours, setOperatingHours] = useState<OperatingHours>(DEFAULT_OPERATING_HOURS);
+  const [operatingHours, setOperatingHours] = useState<OperatingHours>(DEFAULT_VIRTUAL_HOURS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchHours() {
       try {
-        const docRef = doc(db, 'settings', 'operatingHours');
+        const docRef = doc(db, 'settings', settingsDocId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setOperatingHours(docSnap.data() as OperatingHours);
+          setOperatingHours({ id: docSnap.id, ...docSnap.data() } as OperatingHours);
         }
-        // Falls back to DEFAULT_OPERATING_HOURS if doc doesn't exist or user is unauthenticated
+        // Falls back to DEFAULT_VIRTUAL_HOURS if doc doesn't exist or user is unauthenticated
       } catch (error) {
         // Permission denied or network error — use defaults
-        console.info('Using default operating hours.', error);
+        console.info('Using default virtual availability.', error);
       } finally {
         setLoading(false);
       }
     }
     fetchHours();
-  }, []);
+  }, [settingsDocId]);
 
   const generateDates = () => {
     const dates = [];
@@ -139,7 +151,7 @@ export default function BookingCalendar({ onBook, initialDate }: { onBook: (slot
         <div className="p-12 space-y-8 relative">
           <div className="space-y-2">
             <h3 className="text-2xl font-serif text-brand-slate italic">Available Windows</h3>
-            <p className="text-xs uppercase tracking-widest text-brand-moss font-bold opacity-60">Clinical Availability</p>
+            <p className="text-xs uppercase tracking-widest text-brand-moss font-bold opacity-60">{availabilityLabel}</p>
           </div>
 
           <div className="space-y-3">
