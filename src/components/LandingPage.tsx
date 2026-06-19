@@ -79,8 +79,8 @@ export default function LandingPage() {
           >
             <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-2xl relative">
               <img 
-                src={imagePath('vershante-treatment.jpg')}
-                alt="Vershanté Lynn performing a clinical skincare treatment"
+                src={imagePath('vershante-edge-portrait.png')}
+                alt="Vershanté Lynn portrait"
                 className="w-full h-full object-cover filter contrast-[1.05] brightness-[1.02]"
               />
               <div className="absolute inset-0 bg-brand-moss/5" />
