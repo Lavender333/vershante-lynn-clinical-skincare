@@ -10,6 +10,7 @@ import ContactPage from './components/ContactPage';
 import BookNowPage from './components/BookNowPage';
 import AdminDashboard from './components/AdminDashboard';
 import ClientDashboard from './components/ClientDashboard';
+import LegalPage from './components/LegalPage';
 import { MapPin, Lock } from 'lucide-react';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -84,8 +85,8 @@ function Footer() {
             © {new Date().getFullYear()} Vershanté Lynn Aesthetics. All rights reserved.
           </span>
           <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-[9px] uppercase tracking-widest text-brand-moss font-bold">
-            <a href="#" className="hover:text-brand-terracotta transition-all">Privacy Policy</a>
-            <a href="#" className="hover:text-brand-terracotta transition-all">Terms</a>
+            <Link to="/privacy-policy" className="hover:text-brand-terracotta transition-all">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-brand-terracotta transition-all">Terms</Link>
             <Link to="/my-intelligence" className="flex items-center gap-1 hover:text-brand-terracotta transition-all">
               <Lock size={8} /> {user ? 'My Portal' : 'Portal Login'}
             </Link>
@@ -113,6 +114,8 @@ export default function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/dashboard" element={<AdminDashboard />} />
             <Route path="/my-intelligence" element={<ClientDashboard />} />
+            <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />
+            <Route path="/terms" element={<LegalPage type="terms" />} />
           </Routes>
         </main>
         <Footer />
