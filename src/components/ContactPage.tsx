@@ -49,6 +49,20 @@ export default function ContactPage() {
         createdAt: serverTimestamp(),
         status: 'pending',
       });
+
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+        }),
+      }).catch((emailError) => {
+        console.warn('Contact notification email could not be sent:', emailError);
+      });
+
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {

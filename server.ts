@@ -13,6 +13,13 @@ async function startServer() {
   app.use(express.json());
   
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || 'artbrowbeautycle@gmail.com';
+  const escapeHtml = (value: unknown) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
   // API Health Check
   app.get("/api/health", (req, res) => {
@@ -38,22 +45,22 @@ async function startServer() {
 
       const { data, error } = await resend.emails.send({
         from: 'Vershante Lynn Website <onboarding@resend.dev>', // Using verified resend domain for testing/default
-        to: ['antoinetteqwilliams@gmail.com'], 
+        to: [NOTIFICATION_EMAIL],
         replyTo: email,
-        subject: `[Inquiry] ${subject} - ${name}`,
+        subject: `[Inquiry] ${escapeHtml(subject)} - ${escapeHtml(name)}`,
         html: `
           <div style="font-family: 'Inter', sans-serif; color: #2C3E50; max-width: 600px; margin: 0 auto; background-color: #FDFCF9; padding: 40px; border: 1px solid #E8E2D9; border-radius: 20px;">
             <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.2em; color: #D3866E; font-weight: bold; margin-bottom: 20px;">New Website Inquiry</p>
             <h1 style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 24px; color: #4A5D4E; border-bottom: 2px solid #E8E2D9; padding-bottom: 15px;">New Synchronized Message</h1>
             
             <div style="margin: 25px 0;">
-              <p style="font-size: 14px; margin: 5px 0;"><strong>Sender:</strong> ${name}</p>
-              <p style="font-size: 14px; margin: 5px 0;"><strong>Email:</strong> ${email}</p>
-              <p style="font-size: 14px; margin: 5px 0;"><strong>Subject:</strong> ${subject}</p>
+              <p style="font-size: 14px; margin: 5px 0;"><strong>Sender:</strong> ${escapeHtml(name)}</p>
+              <p style="font-size: 14px; margin: 5px 0;"><strong>Email:</strong> ${escapeHtml(email)}</p>
+              <p style="font-size: 14px; margin: 5px 0;"><strong>Subject:</strong> ${escapeHtml(subject)}</p>
             </div>
 
             <div style="background-color: #f4f1ea; padding: 25px; border-radius: 12px; border-left: 4px solid #4A5D4E; margin-top: 20px;">
-              <p style="white-space: pre-wrap; margin: 0; font-size: 15px; line-height: 1.6; color: #4A5D4E;">${message}</p>
+              <p style="white-space: pre-wrap; margin: 0; font-size: 15px; line-height: 1.6; color: #4A5D4E;">${escapeHtml(message)}</p>
             </div>
 
             <div style="margin-top: 40px; border-top: 1px solid #E8E2D9; padding-top: 20px; text-align: center;">
@@ -72,6 +79,86 @@ async function startServer() {
     } catch (err) {
       console.error("Contact API Server Error:", err);
       res.status(500).json({ success: false, error: "Internal clinical server error." });
+    }
+  });
+
+  // Admin Notification for Screening / Dashboard Submissions
+  app.post("/api/admin-notification", async (req, res) => {
+    if (!RESEND_API_KEY) {
+      console.warn("RESEND_API_KEY is not configured.");
+      return res.status(200).json({ success: true, message: "Email not sent: RESEND_API_KEY missing" });
+    }
+
+    const {
+      type = 'Website submission',
+      name,
+      email,
+      phone,
+      subject,
+      concerns = [],
+      concernCategory,
+      message,
+      details = []
+    } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ success: false, error: "Name and email are required." });
+    }
+
+    const concernList = Array.isArray(concerns) ? concerns : [];
+    const detailList = Array.isArray(details) ? details : [];
+
+    try {
+      const { Resend } = await import('resend');
+      const resend = new Resend(RESEND_API_KEY);
+
+      const { data, error } = await resend.emails.send({
+        from: 'Vershante Lynn Website <onboarding@resend.dev>',
+        to: [NOTIFICATION_EMAIL],
+        replyTo: email,
+        subject: `[${escapeHtml(type)}] ${escapeHtml(name)}`,
+        html: `
+          <div style="font-family: 'Inter', sans-serif; color: #070f1b; max-width: 640px; margin: 0 auto; background-color: #ece6e1; padding: 36px; border: 1px solid #e1d8d1; border-radius: 18px;">
+            <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.24em; color: #a85a34; font-weight: bold; margin-bottom: 16px;">New Website Notification</p>
+            <h1 style="font-family: Georgia, serif; font-style: italic; font-size: 28px; color: #070f1b; margin: 0 0 20px;">${escapeHtml(type)}</h1>
+            <div style="background: #fff; border-radius: 14px; padding: 22px; margin-bottom: 20px;">
+              <p style="font-size: 14px; margin: 6px 0;"><strong>Name:</strong> ${escapeHtml(name)}</p>
+              <p style="font-size: 14px; margin: 6px 0;"><strong>Email:</strong> ${escapeHtml(email)}</p>
+              ${phone ? `<p style="font-size: 14px; margin: 6px 0;"><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
+              ${subject ? `<p style="font-size: 14px; margin: 6px 0;"><strong>Subject:</strong> ${escapeHtml(subject)}</p>` : ''}
+              ${concernCategory ? `<p style="font-size: 14px; margin: 6px 0;"><strong>Concern Category:</strong> ${escapeHtml(concernCategory)}</p>` : ''}
+              ${concernList.length ? `<p style="font-size: 14px; margin: 6px 0;"><strong>Concerns:</strong> ${concernList.map(escapeHtml).join(', ')}</p>` : ''}
+            </div>
+            ${message ? `
+              <div style="background: #fff; border-left: 4px solid #a85a34; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <p style="white-space: pre-wrap; margin: 0; font-size: 14px; line-height: 1.6;">${escapeHtml(message)}</p>
+              </div>
+            ` : ''}
+            ${detailList.length ? `
+              <div style="background: #fff; border-radius: 14px; padding: 22px;">
+                <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.18em; color: #a85a34; font-weight: bold;">Screening Responses</p>
+                ${detailList.map((item: any) => `
+                  <div style="border-top: 1px solid #e1d8d1; padding-top: 12px; margin-top: 12px;">
+                    <p style="font-size: 12px; font-weight: bold; margin: 0 0 6px;">${escapeHtml(item.question || item.id)}</p>
+                    <p style="font-size: 13px; margin: 0; color: #6c4333;">${Array.isArray(item.answer) ? item.answer.map(escapeHtml).join(', ') : escapeHtml(item.answer)}</p>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+            <p style="font-size: 11px; color: #886a5a; margin-top: 24px;">This submission was also saved to the Intelligence Portal.</p>
+          </div>
+        `
+      });
+
+      if (error) {
+        console.error("Admin notification email error:", error);
+        return res.status(500).json({ success: false, error: "Failed to send notification email." });
+      }
+
+      res.status(200).json({ success: true, data });
+    } catch (err) {
+      console.error("Admin notification server error:", err);
+      res.status(500).json({ success: false, error: "Internal server error." });
     }
   });
 
@@ -165,37 +252,6 @@ async function startServer() {
       }
 
       const { data, error } = await resend.emails.send(emailPayload);
-        from: 'Vershante Lynn <onboarding@resend.dev>',
-        to: [email],
-        bcc: ['antoinetteqwilliams@gmail.com'],
-        subject: `Your Skin Intelligence Protocol: ${fullName}`,
-        html: `
-          <div style="font-family: 'Inter', sans-serif; color: #2C3E50; max-width: 600px; margin: 0 auto; background-color: #FDFCF9; padding: 40px; border: 1px solid #E8E2D9; border-radius: 20px;">
-            <h1 style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 32px; color: #4A5D4E; border-bottom: 2px solid #D3866E; padding-bottom: 10px;">Vershante Lynn Skin Intelligence</h1>
-            
-            <p style="font-size: 16px; line-height: 1.6;">Hello ${fullName},</p>
-            <p style="font-size: 16px; line-height: 1.6;">Your skin diagnostic has been logged. We are preparing for our deep-dive into your biological flow and clinical patterns.</p>
-            
-            <div style="background-color: #2C3E50; color: white; padding: 25px; border-radius: 15px; margin: 30px 0;">
-              <h2 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 20px; color: #D3866E;">Confirmed Consultation</h2>
-              <p style="font-size: 24px; font-family: 'Cormorant Garamond', serif; font-style: italic; margin: 5px 0;">${bookingDetails.date}</p>
-              <p style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7);">${bookingDetails.time} — ${bookingDetails.type} Session</p>
-            </div>
-
-            <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; color: #4A5D4E; margin-top: 30px;">Preliminary Clinical Insights</h3>
-            <p style="font-size: 14px; font-style: italic; color: #4A5D4E; padding-left: 15px; border-left: 2px solid #E8E2D9;">"${insightsSummary.analysis}"</p>
-            
-            <div style="margin-top: 20px;">
-              <p style="font-size: 10px; text-transform: uppercase; font-bold; color: #D3866E;">Primary Focus Areas</p>
-              <p style="font-size: 12px; color: #2C3E50;">${clinicalFocus.join(', ')}</p>
-            </div>
-
-            <div style="margin-top: 40px; border-top: 1px solid #E8E2D9; pt: 20px; text-align: center;">
-              <p style="font-size: 12px; color: #4A5D4E; opacity: 0.6;">Clinically Trained Esthetician | Skin Intelligence Assessments</p>
-            </div>
-          </div>
-        `
-      });
 
       if (error) {
         console.error("Resend Error:", error);

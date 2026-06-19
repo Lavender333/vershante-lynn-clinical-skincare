@@ -243,6 +243,24 @@ export default function SkinIntelligenceScreening() {
         status: 'pending',
       });
 
+      fetch('/api/admin-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'Free Skin Intelligence Screening',
+          name: answers.firstName.trim(),
+          email: answers.email.trim(),
+          phone: answers.phone.trim(),
+          subject: 'New free screening submission',
+          concerns,
+          concernCategory,
+          message: goals.join(', ') || 'Free screening submission',
+          details: screeningResponses,
+        }),
+      }).catch((emailError) => {
+        console.warn('Screening notification email could not be sent:', emailError);
+      });
+
       setStep('results');
     } catch (error) {
       console.error('Free screening submission error:', error);
