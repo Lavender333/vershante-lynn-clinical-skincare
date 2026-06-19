@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Quote, Sparkles, Brain, FlaskConical, Target, Users } from 'lucide-react';
 
+const imagePath = (fileName: string) => `${import.meta.env.BASE_URL}images/${fileName}`;
+
 export default function PhilosophyPage() {
   return (
     <div className="pt-32 pb-24 min-h-screen bg-brand-cream">
@@ -57,7 +59,11 @@ export default function PhilosophyPage() {
               </div>
             </div>
             <div className="aspect-square rounded-2xl overflow-hidden shadow-inner bg-brand-sand/20">
-              <img src="https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80&w=600" alt="Clinical tools" className="w-full h-full object-cover mix-blend-multiply opacity-90" referrerPolicy="no-referrer" />
+              <img
+                src={imagePath('vershante-clinical-grounding.png')}
+                alt="Vershanté Lynn performing a clinical skincare treatment"
+                className="w-full h-full object-cover"
+              />
             </div>
           </motion.div>
 
@@ -69,7 +75,11 @@ export default function PhilosophyPage() {
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="order-2 md:order-1 aspect-square rounded-2xl overflow-hidden shadow-inner bg-white/10">
-              <img src="https://images.unsplash.com/photo-1620916566398-39f114397c5e?auto=format&fit=crop&q=80&w=600" alt="Inclusive Skincare" className="w-full h-full object-cover brightness-[1.05]" referrerPolicy="no-referrer" />
+              <img
+                src={imagePath('vershante-eclectic-warmth.png')}
+                alt="Vershanté Lynn providing a warm clinical skincare treatment"
+                className="w-full h-full object-cover brightness-[1.05]"
+              />
             </div>
             <div className="order-1 md:order-2 space-y-6">
               <div className="inline-flex p-3 bg-brand-sand/10 rounded-2xl">

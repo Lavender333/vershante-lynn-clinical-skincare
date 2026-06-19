@@ -10,7 +10,7 @@ const bookingLinks = [
   {
     title: 'Begin Regenerative Skin Systems',
     description: 'Move into structured corrective care and skin renewal planning.',
-    href: 'https://pocketsuite.io/link/vershantelynn/begin-regenerative-skin-systems',
+    href: 'https://vershantelynnaesthetics.com/screening',
     icon: Sparkles,
   },
   {

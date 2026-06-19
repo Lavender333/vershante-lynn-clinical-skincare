@@ -179,35 +179,41 @@ export default function LandingPage() {
                 Clinical Method
               </div>
               <h2 className="text-5xl font-serif text-brand-slate italic leading-tight">
-                Corrective care, seen clearly.
+                THE LYNN METHOD™
               </h2>
             </div>
             <p className="text-brand-moss/70 font-light leading-relaxed max-w-2xl lg:ml-auto">
-              Treatment visuals reflect the precision behind the Skin Intelligence approach: calm analysis,
-              professional technique, and melanin-aware corrective skincare.
+              A professional framework for reading the skin beyond surface symptoms, then creating care that responds to history, behavior, and change over time.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
             <div className="bg-white border border-brand-sand rounded-2xl p-8 shadow-sm">
               <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-4">01</p>
-              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Assess</h3>
+              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Look Deeper</h3>
               <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
-                Skin history, visible patterns, product use, lifestyle signals, and barrier behavior are reviewed before correction begins.
+                Observe the skin, lifestyle, history, and patterns that influence skin health.
               </p>
             </div>
             <div className="bg-white border border-brand-sand rounded-2xl p-8 shadow-sm">
               <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-4">02</p>
-              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Interpret</h3>
+              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Yield Data</h3>
               <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
-                Pigment, inflammation, congestion, dehydration, and sensitivity are read as connected patterns, not isolated symptoms.
+                Gather meaningful information through assessment, observation, and conversation.
               </p>
             </div>
             <div className="bg-white border border-brand-sand rounded-2xl p-8 shadow-sm">
               <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-4">03</p>
-              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Correct</h3>
+              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Navigate</h3>
               <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
-                Treatment strategy and homecare guidance are matched to how your skin is responding over time.
+                Create a personalized strategy that evolves with your skin.
+              </p>
+            </div>
+            <div className="bg-white border border-brand-sand rounded-2xl p-8 shadow-sm">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-terracotta mb-4">04</p>
+              <h3 className="text-2xl font-serif italic text-brand-slate mb-3">Nurture</h3>
+              <p className="text-sm text-brand-moss/70 font-light leading-relaxed">
+                Support healthier skin function, resilience, and long-term radiance
               </p>
             </div>
           </div>
