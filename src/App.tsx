@@ -11,6 +11,7 @@ import BookNowPage from './components/BookNowPage';
 import AdminDashboard from './components/AdminDashboard';
 import ClientDashboard from './components/ClientDashboard';
 import LegalPage from './components/LegalPage';
+import JournalPage from './components/JournalPage';
 import { MapPin, Lock } from 'lucide-react';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -53,6 +54,7 @@ function Footer() {
             <li><Link to="/" className="hover:text-brand-terracotta transition-colors">The Edge</Link></li>
             <li><Link to="/screening" className="hover:text-brand-terracotta transition-colors">Free Screening</Link></li>
             <li><Link to="/book-now" className="hover:text-brand-terracotta transition-colors">Book Now</Link></li>
+            <li><Link to="/journal" className="hover:text-brand-terracotta transition-colors">Journal</Link></li>
             <li><Link to="/philosophy" className="hover:text-brand-terracotta transition-colors">Philosophy</Link></li>
             <li><Link to="/contact" className="hover:text-brand-terracotta transition-colors">Contact Us</Link></li>
             <li><Link to="/my-intelligence" className="hover:text-brand-terracotta transition-colors">My Intelligence Portal</Link></li>
@@ -109,6 +111,8 @@ export default function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/screening" element={<SkinIntelligenceScreening />} />
             <Route path="/book-now" element={<BookNowPage />} />
+            <Route path="/journal" element={<JournalPage />} />
+            <Route path="/journal/:slug" element={<JournalPage />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/philosophy" element={<PhilosophyPage />} />
             <Route path="/contact" element={<ContactPage />} />

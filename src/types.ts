@@ -36,6 +36,23 @@ export interface ContactMessage {
   updatedAt?: any;
 }
 
+export interface BlogPost {
+  id?: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  category: string;
+  imageUrl?: string;
+  status: 'draft' | 'published';
+  featured?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  publishDate: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
 export interface AssessmentData {
   id?: string; // Document ID (assigned by Firestore after creation)
   fullName: string;

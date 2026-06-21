@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { db, auth } from '../lib/firebase';
 import { 
   collection, 
@@ -51,10 +52,11 @@ import {
   ChevronLeft,
   CheckCircle2,
   ClipboardList,
-  ImagePlus
+  ImagePlus,
+  BookOpen
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AssessmentData, ContactMessage, EventPost, OperatingHours } from '../types';
+import { AssessmentData, BlogPost, ContactMessage, EventPost, OperatingHours } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isSameMonth } from 'date-fns';
@@ -140,12 +142,20 @@ const imageFileToDataUrl = (file: File): Promise<string> => {
   });
 };
 
+const createSlug = (value: string) => value
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '')
+  .slice(0, 80);
+
 export default function AdminDashboard() {
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [loading, setLoading] = useState(!auth.currentUser);
   const [records, setRecords] = useState<AssessmentRecord[]>([]);
   const [events, setEvents] = useState<EventPost[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AssessmentRecord | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -153,7 +163,7 @@ export default function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAdminState, setIsAdminState] = useState(false);
-  const [activeTab, setActiveTab] = useState<'assessments' | 'clients' | 'messages' | 'events' | 'team' | 'settings'>('assessments');
+  const [activeTab, setActiveTab] = useState<'assessments' | 'clients' | 'messages' | 'events' | 'journal' | 'team' | 'settings'>('assessments');
   const [activeSubTab, setActiveSubTab] = useState<'list' | 'calendar'>('list');
   const [adminsList, setAdminsList] = useState<{id: string, email: string}[]>([]);
   const [operatingHours, setOperatingHours] = useState<OperatingHours | null>(null);
@@ -177,6 +187,22 @@ export default function AdminDashboard() {
   const [editingEventStorage, setEditingEventStorage] = useState<'events' | 'assessments'>('events');
   const [eventSaving, setEventSaving] = useState(false);
   const [eventImageProcessing, setEventImageProcessing] = useState(false);
+  const [blogForm, setBlogForm] = useState<BlogPost>({
+    title: '',
+    slug: '',
+    excerpt: '',
+    body: '',
+    category: 'Skin Intelligence',
+    imageUrl: '',
+    status: 'draft',
+    featured: false,
+    seoTitle: '',
+    seoDescription: '',
+    publishDate: new Date().toISOString().slice(0, 10)
+  });
+  const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
+  const [blogSaving, setBlogSaving] = useState(false);
+  const [blogImageProcessing, setBlogImageProcessing] = useState(false);
 
   // Edit State
   const [isEditing, setIsEditing] = useState(false);
@@ -295,6 +321,23 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (user && isAdminState) {
+      const q = query(collection(db, 'blogPosts'), orderBy('publishDate', 'desc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as BlogPost[];
+        setBlogPosts(data);
+      }, (error) => {
+        console.info('Journal posts collection unavailable.', error);
+        setBlogPosts([]);
+      });
+      return unsubscribe;
+    }
+  }, [user, isAdminState]);
+
+  useEffect(() => {
+    if (user && isAdminState) {
       const unsubscribe = onSnapshot(doc(db, 'settings', 'operatingHours'), (snapshot) => {
         if (snapshot.exists()) {
           setOperatingHours({ id: snapshot.id, ...snapshot.data() } as OperatingHours);
@@ -400,6 +443,120 @@ export default function AdminDashboard() {
     });
     setEditingEventId(null);
     setEditingEventStorage('events');
+  };
+
+  const resetBlogForm = () => {
+    setBlogForm({
+      title: '',
+      slug: '',
+      excerpt: '',
+      body: '',
+      category: 'Skin Intelligence',
+      imageUrl: '',
+      status: 'draft',
+      featured: false,
+      seoTitle: '',
+      seoDescription: '',
+      publishDate: new Date().toISOString().slice(0, 10)
+    });
+    setEditingBlogId(null);
+  };
+
+  const handleEditBlogPost = (post: BlogPost) => {
+    setBlogForm({
+      title: post.title || '',
+      slug: post.slug || '',
+      excerpt: post.excerpt || '',
+      body: post.body || '',
+      category: post.category || 'Skin Intelligence',
+      imageUrl: post.imageUrl || '',
+      status: post.status || 'draft',
+      featured: Boolean(post.featured),
+      seoTitle: post.seoTitle || '',
+      seoDescription: post.seoDescription || '',
+      publishDate: post.publishDate || new Date().toISOString().slice(0, 10)
+    });
+    setEditingBlogId(post.id || null);
+  };
+
+  const handleBlogImageUpload = async (file?: File) => {
+    if (!file) return;
+    setBlogImageProcessing(true);
+    try {
+      const dataUrl = await imageFileToDataUrl(file);
+      setBlogForm((current) => ({ ...current, imageUrl: dataUrl }));
+      toast.success('Journal image added');
+    } catch (error) {
+      console.error('Failed to prepare journal image', error);
+      toast.error('Image upload failed', {
+        description: 'Please choose a smaller JPG or PNG image.'
+      });
+    } finally {
+      setBlogImageProcessing(false);
+    }
+  };
+
+  const handleSaveBlogPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!blogForm.title || !blogForm.excerpt || !blogForm.body || !blogForm.category || !blogForm.publishDate) {
+      toast.error('Journal post needs more detail', {
+        description: 'Add a title, category, excerpt, body, and publish date.'
+      });
+      return;
+    }
+
+    setBlogSaving(true);
+    try {
+      const slug = createSlug(blogForm.slug || blogForm.title);
+      const payload = {
+        title: blogForm.title.trim(),
+        slug,
+        excerpt: blogForm.excerpt.trim(),
+        body: blogForm.body.trim(),
+        category: blogForm.category.trim(),
+        imageUrl: blogForm.imageUrl?.trim() || '',
+        status: blogForm.status,
+        featured: Boolean(blogForm.featured),
+        seoTitle: blogForm.seoTitle?.trim() || blogForm.title.trim(),
+        seoDescription: blogForm.seoDescription?.trim() || blogForm.excerpt.trim(),
+        publishDate: blogForm.publishDate,
+        updatedAt: serverTimestamp()
+      };
+
+      if (editingBlogId) {
+        await updateDoc(doc(db, 'blogPosts', editingBlogId), payload);
+        toast.success('Journal post updated');
+      } else {
+        await addDoc(collection(db, 'blogPosts'), {
+          ...payload,
+          createdAt: serverTimestamp()
+        });
+        toast.success(blogForm.status === 'published' ? 'Journal post published' : 'Journal draft saved');
+      }
+
+      resetBlogForm();
+    } catch (error) {
+      console.error('Failed to save journal post', error);
+      toast.error('Journal save failed', {
+        description: 'Check that the blogPosts Firebase rule is active for this database.'
+      });
+    } finally {
+      setBlogSaving(false);
+    }
+  };
+
+  const handleDeleteBlogPost = async (postId?: string) => {
+    if (!postId) return;
+    if (!window.confirm('Delete this journal post?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'blogPosts', postId));
+      if (editingBlogId === postId) resetBlogForm();
+      toast.success('Journal post removed');
+    } catch (error) {
+      console.error('Failed to delete journal post', error);
+      toast.error('Unable to remove journal post');
+    }
   };
 
   const handleEditEvent = (event: EventPost) => {
@@ -1099,6 +1256,16 @@ export default function AdminDashboard() {
                   <Calendar size={14} />
                   Events
               </button>
+              <button
+                onClick={() => setActiveTab('journal')}
+                className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-widest",
+                    activeTab === 'journal' ? "bg-white/10 text-brand-terracotta" : "text-white/60 hover:bg-white/5"
+                )}
+              >
+                  <BookOpen size={14} />
+                  Journal
+              </button>
               <button 
                 onClick={() => setActiveTab('team')}
                 className={cn(
@@ -1733,6 +1900,220 @@ export default function AdminDashboard() {
                 }) : (
                   <div className="bg-white border border-dashed border-brand-sand rounded-[2rem] p-12 text-center">
                     <p className="text-brand-moss/50 font-serif italic text-xl">No events posted yet.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : activeTab === 'journal' ? (
+          <div className="max-w-6xl mx-auto py-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <h1 className="text-4xl font-serif text-brand-slate italic mb-2">Skin Intelligence Journal</h1>
+                <p className="text-brand-moss/60 font-light italic">Publish articles, education, treatment notes, and professional updates.</p>
+              </div>
+              {editingBlogId && (
+                <button
+                  onClick={resetBlogForm}
+                  className="inline-flex items-center justify-center gap-2 border border-brand-sand text-brand-moss px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-brand-cream transition-all"
+                >
+                  <X size={13} />
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+
+            <div className="grid lg:grid-cols-[440px_1fr] gap-8">
+              <form onSubmit={handleSaveBlogPost} className="bg-white border border-brand-sand rounded-[2rem] p-8 shadow-sm space-y-5 h-fit">
+                <div className="flex items-center gap-3 pb-4 border-b border-brand-sand">
+                  <BookOpen className="text-brand-terracotta" size={22} />
+                  <h2 className="text-2xl font-serif italic text-brand-slate">{editingBlogId ? 'Edit Article' : 'New Article'}</h2>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Title</label>
+                  <input
+                    value={blogForm.title}
+                    onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value, slug: blogForm.slug || createSlug(e.target.value) })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    placeholder="Why hyperpigmentation follows patterns"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Category</label>
+                    <select
+                      value={blogForm.category}
+                      onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })}
+                      className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    >
+                      <option>Skin Intelligence</option>
+                      <option>Hyperpigmentation</option>
+                      <option>Barrier Health</option>
+                      <option>Melanin-Rich Skin</option>
+                      <option>Corrective Skincare</option>
+                      <option>Product Education</option>
+                      <option>Treatments</option>
+                      <option>Hormonal Skin Changes</option>
+                      <option>Professional Notes</option>
+                      <option>Events & Announcements</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Publish Date</label>
+                    <input
+                      type="date"
+                      value={blogForm.publishDate}
+                      onChange={(e) => setBlogForm({ ...blogForm, publishDate: e.target.value })}
+                      className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Slug</label>
+                  <input
+                    value={blogForm.slug}
+                    onChange={(e) => setBlogForm({ ...blogForm, slug: createSlug(e.target.value) })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    placeholder="article-url"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Short Excerpt</label>
+                  <textarea
+                    value={blogForm.excerpt}
+                    onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta min-h-[90px]"
+                    placeholder="A concise preview for the public journal card."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Article Body</label>
+                  <textarea
+                    value={blogForm.body}
+                    onChange={(e) => setBlogForm({ ...blogForm, body: e.target.value })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta min-h-[220px]"
+                    placeholder="Write the full article here. Use line breaks to create paragraphs."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Featured Image Optional</label>
+                  <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-brand-sand bg-brand-cream/40 px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-brand-moss transition-all hover:border-brand-terracotta hover:text-brand-terracotta">
+                    <ImagePlus size={16} />
+                    {blogImageProcessing ? 'Preparing Image...' : blogForm.imageUrl ? 'Change Image' : 'Upload Picture'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleBlogImageUpload(e.target.files?.[0])}
+                      disabled={blogImageProcessing}
+                    />
+                  </label>
+                  {blogForm.imageUrl && (
+                    <div className="overflow-hidden rounded-xl border border-brand-sand bg-white">
+                      <img src={blogForm.imageUrl} alt="" className="h-40 w-full object-cover" referrerPolicy="no-referrer" />
+                    </div>
+                  )}
+                  <input
+                    value={blogForm.imageUrl?.startsWith('data:') ? '' : blogForm.imageUrl || ''}
+                    onChange={(e) => setBlogForm({ ...blogForm, imageUrl: e.target.value })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    placeholder="Or paste image URL"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="flex items-center gap-3 rounded-xl border border-brand-sand bg-brand-cream/30 px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-brand-moss">
+                    <input
+                      type="checkbox"
+                      checked={blogForm.featured}
+                      onChange={(e) => setBlogForm({ ...blogForm, featured: e.target.checked })}
+                    />
+                    Featured
+                  </label>
+                  <select
+                    value={blogForm.status}
+                    onChange={(e) => setBlogForm({ ...blogForm, status: e.target.value as BlogPost['status'] })}
+                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-brand-moss outline-none focus:border-brand-terracotta"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={blogSaving || blogImageProcessing}
+                  className="w-full bg-brand-moss text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-slate transition-all shadow-lg disabled:opacity-50"
+                >
+                  {blogImageProcessing ? 'Preparing Image...' : blogSaving ? 'Saving...' : editingBlogId ? 'Update Article' : 'Save Article'}
+                </button>
+              </form>
+
+              <div className="space-y-4">
+                {blogPosts.length > 0 ? blogPosts.map((post) => (
+                  <div key={post.id} className="bg-white border border-brand-sand rounded-[2rem] p-6 shadow-sm flex flex-col md:flex-row gap-5">
+                    {post.imageUrl && (
+                      <div className="md:w-44 aspect-[16/10] rounded-xl overflow-hidden bg-brand-sand/20 shrink-0">
+                        <img src={post.imageUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </div>
+                    )}
+                    <div className="space-y-3 flex-grow min-w-0">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest font-bold text-brand-terracotta">{post.category} • {post.publishDate}</p>
+                          <h3 className="text-2xl font-serif italic text-brand-slate">{post.title}</h3>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className={cn(
+                            "text-[8px] uppercase tracking-widest font-bold px-2 py-1 rounded-full",
+                            post.status === 'published' ? "bg-emerald-50 text-emerald-700" : "bg-brand-sand/30 text-brand-moss"
+                          )}>
+                            {post.status}
+                          </span>
+                          {post.featured && (
+                            <span className="text-[8px] uppercase tracking-widest font-bold bg-brand-terracotta/10 text-brand-terracotta px-2 py-1 rounded-full">Featured</span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-sm text-brand-moss/70 font-light leading-relaxed">{post.excerpt}</p>
+                      <p className="text-[10px] text-brand-moss/40 truncate">/journal/{post.slug}</p>
+                      <div className="flex flex-wrap gap-3 pt-2">
+                        {post.status === 'published' && (
+                          <Link
+                            to={`/journal/${post.slug}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-moss hover:text-brand-terracotta"
+                          >
+                            <ExternalLink size={12} />
+                            View
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => handleEditBlogPost(post)}
+                          className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-terracotta hover:text-brand-slate"
+                        >
+                          <Edit2 size={12} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBlogPost(post.id)}
+                          className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-sand hover:text-red-500"
+                        >
+                          <Trash2 size={12} />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="bg-white border border-dashed border-brand-sand rounded-[2rem] p-12 text-center">
+                    <p className="text-brand-moss/50 font-serif italic text-xl">No journal posts yet.</p>
                   </div>
                 )}
               </div>

@@ -78,6 +78,12 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // --- Skin Intelligence Journal ---
+    match /blogPosts/{postId} {
+      allow read: if isAdmin() || resource.data.status == 'published';
+      allow create, update, delete: if isAdmin();
+    }
+
     // --- Contact Messages ---
     match /contactMessages/{messageId} {
       allow create: if isValidId(messageId)
