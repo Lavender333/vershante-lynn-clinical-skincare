@@ -205,6 +205,7 @@ export default function AdminDashboard() {
     slug: '',
     excerpt: '',
     body: '',
+    postType: 'Article',
     category: 'Skin Intelligence',
     imageUrl: '',
     status: 'draft',
@@ -484,6 +485,7 @@ export default function AdminDashboard() {
       slug: '',
       excerpt: '',
       body: '',
+      postType: 'Article',
       category: 'Skin Intelligence',
       imageUrl: '',
       status: 'draft',
@@ -501,6 +503,7 @@ export default function AdminDashboard() {
       slug: post.slug || '',
       excerpt: post.excerpt || '',
       body: post.body || '',
+      postType: post.postType || 'Article',
       category: post.category || 'Skin Intelligence',
       imageUrl: post.imageUrl || '',
       status: post.status || 'draft',
@@ -546,6 +549,7 @@ export default function AdminDashboard() {
         slug,
         excerpt: blogForm.excerpt.trim(),
         body: blogForm.body.trim(),
+        postType: blogForm.postType || 'Article',
         category: blogForm.category.trim(),
         imageUrl: blogForm.imageUrl?.trim() || '',
         status: blogForm.status,
@@ -2022,7 +2026,7 @@ export default function AdminDashboard() {
               <form onSubmit={handleSaveBlogPost} className="bg-white border border-brand-sand rounded-[2rem] p-8 shadow-sm space-y-5 h-fit">
                 <div className="flex items-center gap-3 pb-4 border-b border-brand-sand">
                   <BookOpen className="text-brand-terracotta" size={22} />
-                  <h2 className="text-2xl font-serif italic text-brand-slate">{editingBlogId ? 'Edit Article' : 'New Article'}</h2>
+                  <h2 className="text-2xl font-serif italic text-brand-slate">{editingBlogId ? 'Edit Journal Post' : 'New Journal Post'}</h2>
                 </div>
 
                 <div className="space-y-2">
@@ -2036,6 +2040,19 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Post Type</label>
+                    <select
+                      value={blogForm.postType || 'Article'}
+                      onChange={(e) => setBlogForm({ ...blogForm, postType: e.target.value as BlogPost['postType'] })}
+                      className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
+                    >
+                      <option>Article</option>
+                      <option>Education</option>
+                      <option>Treatment Note</option>
+                      <option>Professional Update</option>
+                    </select>
+                  </div>
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Category</label>
                     <select
@@ -2055,6 +2072,9 @@ export default function AdminDashboard() {
                       <option>Events & Announcements</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Publish Date</label>
                     <input
@@ -2063,6 +2083,17 @@ export default function AdminDashboard() {
                       onChange={(e) => setBlogForm({ ...blogForm, publishDate: e.target.value })}
                       className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-terracotta"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-moss">Visibility</label>
+                    <select
+                      value={blogForm.status}
+                      onChange={(e) => setBlogForm({ ...blogForm, status: e.target.value as BlogPost['status'] })}
+                      className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-sm font-bold text-brand-moss outline-none focus:border-brand-terracotta"
+                    >
+                      <option value="draft">Draft - private</option>
+                      <option value="published">Public - publish to journal</option>
+                    </select>
                   </div>
                 </div>
 
@@ -2122,7 +2153,7 @@ export default function AdminDashboard() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <label className="flex items-center gap-3 rounded-xl border border-brand-sand bg-brand-cream/30 px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-brand-moss">
                     <input
                       type="checkbox"
@@ -2131,14 +2162,6 @@ export default function AdminDashboard() {
                     />
                     Featured
                   </label>
-                  <select
-                    value={blogForm.status}
-                    onChange={(e) => setBlogForm({ ...blogForm, status: e.target.value as BlogPost['status'] })}
-                    className="w-full bg-brand-cream/40 border border-brand-sand rounded-xl px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-brand-moss outline-none focus:border-brand-terracotta"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                  </select>
                 </div>
 
                 <button
@@ -2161,7 +2184,7 @@ export default function AdminDashboard() {
                     <div className="space-y-3 flex-grow min-w-0">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="text-[10px] uppercase tracking-widest font-bold text-brand-terracotta">{post.category} • {post.publishDate}</p>
+                          <p className="text-[10px] uppercase tracking-widest font-bold text-brand-terracotta">{post.postType || 'Article'} • {post.category} • {post.publishDate}</p>
                           <h3 className="text-2xl font-serif italic text-brand-slate">{post.title}</h3>
                         </div>
                         <div className="flex gap-2">

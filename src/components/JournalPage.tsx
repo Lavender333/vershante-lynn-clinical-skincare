@@ -117,7 +117,7 @@ export default function JournalPage() {
                     Featured Article
                   </div>
                   <div className="space-y-3">
-                    <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-moss/50">{featured.category} • {formatDate(featured.publishDate)}</p>
+                    <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-moss/50">{featured.postType || 'Article'} • {featured.category} • {formatDate(featured.publishDate)}</p>
                     <h2 className="text-4xl md:text-5xl font-serif italic text-brand-slate leading-tight">{featured.title}</h2>
                     <p className="text-brand-moss/75 font-light leading-relaxed">{featured.excerpt}</p>
                   </div>
@@ -145,7 +145,7 @@ export default function JournalPage() {
                     />
                   </div>
                   <div className="p-6 space-y-4">
-                    <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-moss/50">{post.category} • {formatDate(post.publishDate)}</p>
+                    <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-brand-moss/50">{post.postType || 'Article'} • {post.category} • {formatDate(post.publishDate)}</p>
                     <h2 className="text-3xl font-serif italic text-brand-slate leading-tight">{post.title}</h2>
                     <p className="text-sm text-brand-moss/70 font-light leading-relaxed">{post.excerpt}</p>
                   </div>
@@ -199,7 +199,7 @@ function JournalArticle({ post, loading }: { post?: BlogPost | null; loading: bo
             <header className="space-y-5">
               <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] font-bold text-brand-terracotta">
                 <Calendar size={13} />
-                {post.category} • {formatDate(post.publishDate)}
+                {post.postType || 'Article'} • {post.category} • {formatDate(post.publishDate)}
               </div>
               <h1 className="text-5xl md:text-6xl font-serif italic text-brand-slate leading-tight">{post.title}</h1>
               <p className="text-lg text-brand-moss/75 font-light leading-relaxed">{post.excerpt}</p>

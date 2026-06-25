@@ -14,6 +14,7 @@ type JournalPost = {
   slug: string;
   excerpt: string;
   body: string;
+  postType?: "Article" | "Education" | "Treatment Note" | "Professional Update";
   category: string;
   imageUrl?: string;
   status: "draft" | "published";
@@ -34,6 +35,11 @@ const createSlug = (value: string) => value
 
 const sortJournalPosts = (posts: JournalPost[]) =>
   [...posts].sort((a, b) => (b.publishDate || "").localeCompare(a.publishDate || ""));
+
+const cleanPostType = (value: unknown): JournalPost["postType"] => {
+  const validTypes: JournalPost["postType"][] = ["Article", "Education", "Treatment Note", "Professional Update"];
+  return validTypes.includes(value as JournalPost["postType"]) ? value as JournalPost["postType"] : "Article";
+};
 
 const readJournalPosts = async () => {
   try {
@@ -69,6 +75,7 @@ const cleanJournalPost = (post: Partial<JournalPost>, existing?: JournalPost): J
     slug,
     excerpt,
     body,
+    postType: cleanPostType(post.postType),
     category,
     imageUrl: String(post.imageUrl || "").trim(),
     status: post.status === "published" ? "published" : "draft",

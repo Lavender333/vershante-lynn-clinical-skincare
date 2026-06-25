@@ -42,6 +42,7 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   body: string;
+  postType?: 'Article' | 'Education' | 'Treatment Note' | 'Professional Update';
   category: string;
   imageUrl?: string;
   status: 'draft' | 'published';
