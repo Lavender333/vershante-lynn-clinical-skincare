@@ -2,15 +2,90 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
+import { mkdir, readFile, writeFile } from "fs/promises";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const journalDataPath = process.env.JOURNAL_DATA_FILE || path.join(__dirname, "data", "journal-posts.json");
+
+type JournalPost = {
+  id?: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  category: string;
+  imageUrl?: string;
+  status: "draft" | "published";
+  featured?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  publishDate: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+const createSlug = (value: string) => value
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "")
+  .slice(0, 80);
+
+const sortJournalPosts = (posts: JournalPost[]) =>
+  [...posts].sort((a, b) => (b.publishDate || "").localeCompare(a.publishDate || ""));
+
+const readJournalPosts = async () => {
+  try {
+    const stored = await readFile(journalDataPath, "utf8");
+    const posts = JSON.parse(stored);
+    return Array.isArray(posts) ? sortJournalPosts(posts as JournalPost[]) : [];
+  } catch (error: any) {
+    if (error?.code !== "ENOENT") console.warn("Unable to read journal posts file:", error);
+    return [];
+  }
+};
+
+const writeJournalPosts = async (posts: JournalPost[]) => {
+  await mkdir(path.dirname(journalDataPath), { recursive: true });
+  await writeFile(journalDataPath, JSON.stringify(sortJournalPosts(posts), null, 2));
+};
+
+const cleanJournalPost = (post: Partial<JournalPost>, existing?: JournalPost): JournalPost => {
+  const title = String(post.title || "").trim();
+  const excerpt = String(post.excerpt || "").trim();
+  const body = String(post.body || "").trim();
+  const category = String(post.category || "").trim();
+  const publishDate = String(post.publishDate || "").trim();
+  const slug = createSlug(String(post.slug || title));
+
+  if (!title || !excerpt || !body || !category || !publishDate || !slug) {
+    throw new Error("Title, slug, category, excerpt, body, and publish date are required.");
+  }
+
+  return {
+    id: existing?.id || post.id || `file-${Date.now()}`,
+    title,
+    slug,
+    excerpt,
+    body,
+    category,
+    imageUrl: String(post.imageUrl || "").trim(),
+    status: post.status === "published" ? "published" : "draft",
+    featured: Boolean(post.featured),
+    seoTitle: String(post.seoTitle || title).trim(),
+    seoDescription: String(post.seoDescription || excerpt).trim(),
+    publishDate,
+    createdAt: existing?.createdAt || String(post.createdAt || new Date().toISOString()),
+    updatedAt: new Date().toISOString()
+  };
+};
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: "2mb" }));
   
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || 'artbrowbeautycle@gmail.com';
@@ -24,6 +99,55 @@ async function startServer() {
   // API Health Check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", service: "Vershante Lynn Skin Intelligence API" });
+  });
+
+  app.get("/api/journal-posts", async (req, res) => {
+    const posts = await readJournalPosts();
+    const status = String(req.query.status || "");
+    res.json({
+      posts: status === "published" ? posts.filter((post) => post.status === "published") : posts
+    });
+  });
+
+  app.post("/api/journal-posts", async (req, res) => {
+    try {
+      const posts = await readJournalPosts();
+      const post = cleanJournalPost(req.body);
+      const existingIndex = posts.findIndex((current) => current.slug === post.slug);
+
+      if (existingIndex >= 0) {
+        posts[existingIndex] = cleanJournalPost(req.body, posts[existingIndex]);
+      } else {
+        posts.unshift(post);
+      }
+
+      await writeJournalPosts(posts);
+      res.status(201).json({ post: existingIndex >= 0 ? posts[existingIndex] : post });
+    } catch (error: any) {
+      res.status(400).json({ error: error?.message || "Unable to save journal post." });
+    }
+  });
+
+  app.put("/api/journal-posts/:id", async (req, res) => {
+    try {
+      const posts = await readJournalPosts();
+      const postIndex = posts.findIndex((post) => post.id === req.params.id);
+      if (postIndex < 0) return res.status(404).json({ error: "Journal post not found." });
+
+      const updatedPost = cleanJournalPost(req.body, posts[postIndex]);
+      posts[postIndex] = updatedPost;
+      await writeJournalPosts(posts);
+      res.json({ post: updatedPost });
+    } catch (error: any) {
+      res.status(400).json({ error: error?.message || "Unable to update journal post." });
+    }
+  });
+
+  app.delete("/api/journal-posts/:id", async (req, res) => {
+    const posts = await readJournalPosts();
+    const nextPosts = posts.filter((post) => post.id !== req.params.id);
+    await writeJournalPosts(nextPosts);
+    res.json({ success: true });
   });
 
   // Contact Us Submission

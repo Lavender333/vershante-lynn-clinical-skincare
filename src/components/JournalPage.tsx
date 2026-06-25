@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { ArrowLeft, ArrowRight, BookOpen, Calendar, Sparkles } from 'lucide-react';
 import { db } from '../lib/firebase';
+import { fetchJournalPosts } from '../lib/journalApi';
+import { loadLocalJournalPosts, mergeJournalPosts, subscribeToLocalJournalPosts } from '../lib/localJournal';
 import { BlogPost } from '../types';
 
 const defaultImage = `${import.meta.env.BASE_URL}images/vershante-edge-portrait.png`;
@@ -20,22 +22,47 @@ export default function JournalPage() {
   const { slug } = useParams();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const remotePostsRef = useRef<BlogPost[]>([]);
+  const sharedPostsRef = useRef<BlogPost[]>([]);
 
   useEffect(() => {
     const q = query(collection(db, 'blogPosts'), where('status', '==', 'published'));
+    const getPublishedLocalPosts = () => loadLocalJournalPosts().filter((post) => post.status === 'published');
+    const refreshPosts = () => {
+      setPosts(mergeJournalPosts([...remotePostsRef.current, ...sharedPostsRef.current], getPublishedLocalPosts()));
+    };
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const published = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }) as BlogPost)
         .sort((a, b) => b.publishDate.localeCompare(a.publishDate));
-      setPosts(published);
+      remotePostsRef.current = published;
+      refreshPosts();
       setLoading(false);
     }, (error) => {
       console.info('Unable to load journal posts.', error);
-      setPosts([]);
+      remotePostsRef.current = [];
+      refreshPosts();
       setLoading(false);
     });
 
-    return unsubscribe;
+    fetchJournalPosts('published')
+      .then((apiPosts) => {
+        sharedPostsRef.current = apiPosts;
+        refreshPosts();
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.info('Unable to load shared journal posts.', error);
+      });
+
+    const unsubscribeLocal = subscribeToLocalJournalPosts(() => {
+      refreshPosts();
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeLocal();
+    };
   }, []);
 
   const featured = useMemo(() => posts.find((post) => post.featured) || posts[0], [posts]);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { db, auth } from '../lib/firebase';
 import { 
@@ -59,6 +59,15 @@ import { toast } from 'sonner';
 import { AssessmentData, BlogPost, ContactMessage, EventPost, OperatingHours } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { deleteJournalPostFromApi, fetchJournalPosts, saveJournalPostToApi } from '../lib/journalApi';
+import {
+  deleteLocalJournalPost,
+  isLocalJournalPost,
+  loadLocalJournalPosts,
+  mergeJournalPosts,
+  subscribeToLocalJournalPosts,
+  upsertLocalJournalPost
+} from '../lib/localJournal';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isSameMonth } from 'date-fns';
 import BookingCalendar from './BookingCalendar';
 
@@ -149,6 +158,8 @@ const createSlug = (value: string) => value
   .replace(/^-+|-+$/g, '')
   .slice(0, 80);
 
+const isSharedJournalPost = (postId?: string) => Boolean(postId?.startsWith('file-'));
+
 export default function AdminDashboard() {
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [loading, setLoading] = useState(!auth.currentUser);
@@ -156,6 +167,8 @@ export default function AdminDashboard() {
   const [events, setEvents] = useState<EventPost[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const remoteBlogPostsRef = useRef<BlogPost[]>([]);
+  const sharedBlogPostsRef = useRef<BlogPost[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AssessmentRecord | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -321,18 +334,38 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (user && isAdminState) {
+      setBlogPosts(loadLocalJournalPosts());
+      const refreshBlogPosts = () => {
+        setBlogPosts(mergeJournalPosts([...remoteBlogPostsRef.current, ...sharedBlogPostsRef.current]));
+      };
       const q = query(collection(db, 'blogPosts'), orderBy('publishDate', 'desc'));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         })) as BlogPost[];
-        setBlogPosts(data);
+        remoteBlogPostsRef.current = data;
+        refreshBlogPosts();
       }, (error) => {
         console.info('Journal posts collection unavailable.', error);
-        setBlogPosts([]);
+        remoteBlogPostsRef.current = [];
+        refreshBlogPosts();
       });
-      return unsubscribe;
+      fetchJournalPosts()
+        .then((apiPosts) => {
+          sharedBlogPostsRef.current = apiPosts;
+          refreshBlogPosts();
+        })
+        .catch((error) => {
+          console.info('Shared journal store unavailable.', error);
+        });
+      const unsubscribeLocal = subscribeToLocalJournalPosts(() => {
+        refreshBlogPosts();
+      });
+      return () => {
+        unsubscribe();
+        unsubscribeLocal();
+      };
     }
   }, [user, isAdminState]);
 
@@ -508,7 +541,7 @@ export default function AdminDashboard() {
     setBlogSaving(true);
     try {
       const slug = createSlug(blogForm.slug || blogForm.title);
-      const payload = {
+      const payload: BlogPost = {
         title: blogForm.title.trim(),
         slug,
         excerpt: blogForm.excerpt.trim(),
@@ -520,18 +553,60 @@ export default function AdminDashboard() {
         seoTitle: blogForm.seoTitle?.trim() || blogForm.title.trim(),
         seoDescription: blogForm.seoDescription?.trim() || blogForm.excerpt.trim(),
         publishDate: blogForm.publishDate,
+        updatedAt: new Date().toISOString()
+      };
+      const firestorePayload = {
+        ...payload,
         updatedAt: serverTimestamp()
       };
 
-      if (editingBlogId) {
-        await updateDoc(doc(db, 'blogPosts', editingBlogId), payload);
+      if (editingBlogId && isLocalJournalPost(editingBlogId)) {
+        const savedPost = upsertLocalJournalPost({ ...payload, id: editingBlogId });
+        setBlogPosts((currentPosts) => mergeJournalPosts([savedPost], currentPosts));
+        toast.success('Journal post updated locally');
+      } else if (editingBlogId && isSharedJournalPost(editingBlogId)) {
+        const savedPost = await saveJournalPostToApi(payload, editingBlogId);
+        sharedBlogPostsRef.current = mergeJournalPosts([savedPost], sharedBlogPostsRef.current);
+        setBlogPosts(mergeJournalPosts([...remoteBlogPostsRef.current, ...sharedBlogPostsRef.current]));
         toast.success('Journal post updated');
       } else {
-        await addDoc(collection(db, 'blogPosts'), {
-          ...payload,
-          createdAt: serverTimestamp()
-        });
-        toast.success(blogForm.status === 'published' ? 'Journal post published' : 'Journal draft saved');
+        try {
+          if (editingBlogId) {
+            await updateDoc(doc(db, 'blogPosts', editingBlogId), firestorePayload);
+            toast.success('Journal post updated');
+          } else {
+            await addDoc(collection(db, 'blogPosts'), {
+              ...firestorePayload,
+              createdAt: serverTimestamp()
+            });
+            toast.success(blogForm.status === 'published' ? 'Journal post published' : 'Journal draft saved');
+          }
+        } catch (error) {
+          console.info('Saving journal post to shared file store because Firebase is unavailable.', error);
+          try {
+            const savedPost = await saveJournalPostToApi({
+              ...payload,
+              id: editingBlogId || undefined,
+              createdAt: editingBlogId ? blogForm.createdAt : new Date().toISOString()
+            });
+            sharedBlogPostsRef.current = mergeJournalPosts([savedPost], sharedBlogPostsRef.current);
+            setBlogPosts(mergeJournalPosts([...remoteBlogPostsRef.current, ...sharedBlogPostsRef.current]));
+            toast.success(blogForm.status === 'published' ? 'Journal post published' : 'Journal draft saved', {
+              description: 'Saved to the temporary shared journal store.'
+            });
+          } catch (apiError) {
+            console.info('Saving journal post locally because shared storage is unavailable.', apiError);
+            const savedPost = upsertLocalJournalPost({
+              ...payload,
+              id: editingBlogId || undefined,
+              createdAt: editingBlogId ? blogForm.createdAt : new Date().toISOString()
+            });
+            setBlogPosts((currentPosts) => mergeJournalPosts([savedPost], currentPosts));
+            toast.success(blogForm.status === 'published' ? 'Journal post saved on this browser' : 'Journal draft saved on this browser', {
+              description: 'Shared storage is unavailable, so this copy is only on this device.'
+            });
+          }
+        }
       }
 
       resetBlogForm();
@@ -550,12 +625,32 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this journal post?')) return;
 
     try {
-      await deleteDoc(doc(db, 'blogPosts', postId));
+      if (isLocalJournalPost(postId)) {
+        deleteLocalJournalPost(postId);
+      } else if (isSharedJournalPost(postId)) {
+        await deleteJournalPostFromApi(postId);
+        sharedBlogPostsRef.current = sharedBlogPostsRef.current.filter((post) => post.id !== postId);
+      } else {
+        await deleteDoc(doc(db, 'blogPosts', postId));
+      }
       if (editingBlogId === postId) resetBlogForm();
+      setBlogPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
       toast.success('Journal post removed');
     } catch (error) {
-      console.error('Failed to delete journal post', error);
-      toast.error('Unable to remove journal post');
+      console.info('Removing journal post from shared file store because Firebase is unavailable.', error);
+      try {
+        await deleteJournalPostFromApi(postId);
+        sharedBlogPostsRef.current = sharedBlogPostsRef.current.filter((post) => post.id !== postId);
+        if (editingBlogId === postId) resetBlogForm();
+        setBlogPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
+        toast.success('Journal post removed');
+      } catch (apiError) {
+        console.info('Removing journal post locally because shared storage is unavailable.', apiError);
+        deleteLocalJournalPost(postId);
+        if (editingBlogId === postId) resetBlogForm();
+        setBlogPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
+        toast.success('Journal post removed on this browser');
+      }
     }
   };
 
